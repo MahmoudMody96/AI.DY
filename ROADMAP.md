@@ -1,29 +1,51 @@
-# AI.DY — خارطة الطريق التنفيذية (Phases 0.6 → 0.8)
+# AI.DY — خارطة الطريق التنفيذية (Phases 0.6 → 1.x)
 
-> **آخر تحديث:** 2026-06-02
+> **آخر تحديث:** 2026-06-03
 > **المشروع:** `D:\MAHMOUD\projects\AI.DY`
 > **Live:** https://ai-dy-git-main-mahmouds-projects-97f3fe54.vercel.app
 > **Stack:** Next.js 16 + Tailwind 4 + Supabase (Postgres + Auth + RLS) + TypeScript
 > **Branch:** `main` (auto-deploy على Vercel)
+> **آخر commit:** `60629ce` — fix(css): make dark: variant class-based to match next-themes
 
 ---
 
-## الحالة الحالية (آخر commit: `7a3cbba`)
+## الحالة الحالية (آخر commit: `60629ce`)
 
 | Component | Status |
 |---|---|
 | Next.js 16.2.6 + Turbopack | ✅ شغال |
-| Tailwind 4 + CSS theme tokens | ✅ شغال |
+| Tailwind 4 + CSS theme tokens (hsl-wrapped, layered, class-based dark) | ✅ شغال |
 | Supabase schema (19 tables) + RLS (46 policies) | ✅ migrated |
 | Seed data (8 categories + 28 tools) | ✅ live |
 | API routes: `/api/tools`, `/api/categories` | ✅ 200 OK |
 | Homepage `/` (RTL, hero, categories, featured tools) | ✅ deployed |
-| Console 404s على prefetch لـ `/tools`, `/categories/[slug]`, `/tools/[slug]` | ⚠️ 10 errors |
-| Dynamic pages (listings/details) | ❌ مش موجودة |
-| Component library | ❌ inline JSX في كل صفحة |
-| Auth flow | ❌ مفيش users بعد |
+| Dynamic pages (`/tools`, `/tools/[slug]`, `/categories`, `/categories/[slug]`, `/blog`) | ✅ deployed |
+| Dark mode (class-based via next-themes + `@custom-variant`) | ✅ شغّال verified on Vercel |
+| SEO: sitemap.xml + robots.txt + canonical URLs | ✅ Phase 1.0 — see below |
+| Component library (shadcn-style) | ⚠️ mixed with inline JSX — extract in Phase 1.2 |
+| Auth flow (login/signup/forgot, server actions) | ⚠️ pages + actions موجودة، users live بعد Phase 1.1 |
+| Reviews / ratings | ❌ مش موجودة — Phase 1.3 |
+| Live demos | ❌ مش موجودة — Phase 2.0 |
+| Monetization (affiliate / sponsored / newsletter) | ❌ مش موجودة — Phase 4.0 |
+| Admin dashboard (CMS) | ❌ مش موجودة — Phase 1.5 |
+| Blog content | ❌ placeholder — Phase 1.5 (via admin dashboard) |
 
-**المشكلة الوحيدة اللي ظاهرة للـ user:** الـ 404s. حلها = Phase 0.6.
+---
+
+## Phase 1.0 — SEO Foundation ✅ DONE (2026-06-03)
+
+**الهدف:** الموقع indexable من Google.
+
+**اللي اتعمل:**
+- `src/app/sitemap.ts` — dynamic من Supabase (static routes + كل tools + كل categories)
+- `src/app/robots.ts` — allow public + disallow auth/api/admin + block AI training crawlers
+- `metadataBase` في `layout.tsx`
+- `title.template: "%s | AI.DY"` — يضمن suffix ثابت
+- `alternates.canonical` على كل route (static + dynamic)
+- `openGraph` و `robots` defaults في الـ root metadata
+
+**Commits:**
+- (سيتم في الـ commit الحالي)
 
 ---
 
@@ -484,6 +506,130 @@ export async function SiteHeader() {
 
 ---
 
+## Phase 1.x — الخطة الجديدة (Foundation + Content + Demos + Money)
+
+### Phase 1.1 — Auth Live
+- Supabase Dashboard: enable Google + Email providers
+- Add env vars in Vercel (`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`)
+- Add `handle_new_user` trigger (auto-create profile row on signup)
+- Verify signup → login → favorites flow end-to-end
+- **DOD:** 1 test user signs up, gets redirected to `/`, profile row exists in `profiles` table
+
+### Phase 1.2 — Component Extraction
+- Move inline JSX out of `page.tsx` files into `src/components/`
+- Target: `ToolCard`, `CategoryCard`, `RatingStars`, `PricingBadge`, `EmptyState`
+- Replace duplicates across homepage + /tools + /categories
+- **DOD:** Zero `bg-zinc-*` literals in `page.tsx` files, all in components
+
+### Phase 1.3 — Reviews & Ratings
+- Migration: `reviews` table (user_id, tool_id, rating 1-5, body, created_at)
+- RLS: anyone can read published, only auth users can write own
+- `/api/reviews` POST + GET endpoints
+- Reviews section on `/tools/[slug]` (server component)
+- **DOD:** Logged-in user can post a review, it shows on tool page
+
+### Phase 1.4 — Live Demo Component Framework
+- Define `DemoComponent` interface (props: tool type + tool data)
+- Implement 5 demo types: chat, image-gallery, tts, code-sandbox, template-form
+- Wire to tool pages via `tool.demo_type` field (add to tools schema)
+- 3 reference implementations: ChatGPT, Claude, Gemini
+- **DOD:** `/tools/chatgpt` shows a working "try ChatGPT-like prompt" widget
+
+### Phase 1.5 — Admin Dashboard + Content Engine ⭐ NEW
+**القرار:** بدل ما نكتب blog posts يدوي، هنعمل admin dashboard والـ agents بتاعتي هتنزّل محتوى مستمر من خلاله.
+
+**Scope:**
+- `/admin` route (protected: role = 'admin' in profiles table)
+- Dashboard home: stats (users, reviews, posts, page views)
+- **CRUD على:** tools, categories, blog posts, reviews moderation
+- **Content Engine API:** `/api/admin/content` POST endpoint يقبل:
+  ```ts
+  {
+    type: 'blog_post' | 'comparison' | 'use_case',
+    title: string,
+    slug?: string,  // auto-generated if missing
+    body: string,   // markdown
+    target_tools: string[],  // tool slugs to link
+    target_categories: string[],
+    seo_keywords: string[],
+    status: 'draft' | 'scheduled' | 'published',
+    published_at?: string,
+  }
+  ```
+  - The API validates, generates SEO-friendly slug, computes reading time, links tool mentions
+  - Agents call this API to publish content in batches
+- Public blog routes: `/blog`, `/blog/[slug]`
+- **DOD:** Agent can call `POST /api/admin/content` with a markdown post, it lands in DB, shows on `/blog/[slug]` within 5 minutes
+
+**Database additions:**
+```sql
+create table blog_posts (
+  id uuid primary key default gen_random_uuid(),
+  slug text unique not null,
+  title text not null,
+  excerpt text,
+  body_markdown text not null,
+  body_html text,  -- rendered server-side
+  cover_image text,
+  type text not null default 'blog_post',  -- blog_post | comparison | use_case
+  target_tools text[],  -- slugs
+  target_categories text[],
+  seo_keywords text[],
+  reading_time_minutes int,
+  author_id uuid references profiles(id),
+  status text not null default 'draft',  -- draft | scheduled | published
+  published_at timestamptz,
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
+);
+```
+
+**Pages:**
+- `/admin` — overview
+- `/admin/posts` — list + filter by status/type
+- `/admin/posts/[id]/edit` — markdown editor + live preview
+- `/admin/tools` — list + edit
+- `/admin/categories` — list + edit
+- `/admin/reviews` — moderation queue
+- `/admin/content/new` — quick-publish form (for agents)
+
+**Content types (Phase 1.5.1):**
+- `blog_post` — مقال عادي
+- `comparison` — مقارنة (auto-renders comparison table)
+- `use_case` — صفحة حالة استخدام (auto-links to tools)
+
+**Agent workflow:**
+1. Agent generates content (markdown)
+2. Agent calls `POST /api/admin/content` with `status: 'draft'`
+3. Owner reviews in `/admin/posts` (15 min)
+4. Owner clicks "publish" → `status: 'published'`, `published_at: now()`
+5. Sitemap regenerates (Next.js revalidates `/sitemap.xml` on next request)
+
+**Acceptance:**
+- 1 admin can log in, navigate to `/admin/posts`, see drafts
+- Agent can post via API, owner can publish from dashboard
+- 3 sample posts (1 of each type) live on `/blog`
+
+### Phase 1.6 — "Use Case" Pages (parallel with 1.5)
+- New route: `/use-cases/[slug]`
+- 5-10 initial use cases: content creation, coding, customer support, data analysis, Arabic content, education
+- Each page lists 5-8 relevant tools + description
+- Linked from header nav + blog posts
+
+### Phase 2.0 — Live Demos
+- Implement 10 demos for the 28 tools
+- Each tool page shows: hero + meta + **live demo** + reviews + alternatives
+- APIs: use free tiers (OpenAI gpt-3.5-turbo for chat, Ideogram free for image, etc.)
+- Cache demos with rate limits
+
+### Phase 4.0 — Monetization
+- Affiliate links via `tools.affiliate_url` field
+- Sponsored slots (3 positions on `/tools` + homepage)
+- Newsletter via Resend (already in env)
+- Lead-gen CTA: "عايز تطبيق زي AI.DY؟" → Mahmoud's WhatsApp
+
+---
+
 ## Acceptance Criteria per Phase
 
 | Phase | Definition of Done |
@@ -491,5 +637,14 @@ export async function SiteHeader() {
 | 0.6 | All 3 pages return 200, all 10 console 404s gone, build passes |
 | 0.7 | shadcn installed, no inline JSX duplicates, dark mode toggle works |
 | 0.8 | Email + Google signup works, session persists, user menu shows avatar, sign out works |
+| 1.0 | sitemap.xml renders with all routes, robots.txt correct, canonical URLs in <head> |
+| 1.1 | Real user signs up via Google, profile row created, user menu shows name |
+| 1.2 | No `bg-zinc-*` in `page.tsx`; all visual primitives come from `src/components/` |
+| 1.3 | Logged-in user posts review; review shows on tool page; rating updates |
+| 1.4 | 3 chat-type demos working (ChatGPT, Claude, Gemini) |
+| 1.5 | Agent posts via API → owner publishes from dashboard → 3 sample posts live on /blog |
+| 1.6 | 5 use-case pages with 5+ tools each |
+| 2.0 | 10 live demos across all 28 tools |
+| 4.0 | Affiliate link click tracked, 1 sponsored slot sold, newsletter live |
 
 **كل phase ينتهي بـ:** Vercel deployment ناجح + screenshot للـ new feature + todo list updated.

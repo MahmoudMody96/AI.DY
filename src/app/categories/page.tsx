@@ -3,8 +3,9 @@ import { createClient } from "@/lib/supabase/server";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "كل الفئات | AI.DY",
+  title: "كل الفئات",
   description: "تصفح كل فئات أدوات الذكاء الاصطناعي: مساعدين، كتابة، صور، برمجة، فيديو، صوت، أتمتة، وبحث.",
+  alternates: { canonical: "/categories" },
 };
 
 const CATEGORY_ICONS: Record<string, string> = {

@@ -37,7 +37,10 @@ export async function generateMetadata({
   try {
     const supabase = await createClient();
     if (!supabase) {
-      return { title: `${readableTitle} | AI.DY` };
+      return {
+        title: `${readableTitle} | AI.DY`,
+        alternates: { canonical: `/categories/${slug}` },
+      };
     }
 
     const { data: category } = await supabase
@@ -48,7 +51,10 @@ export async function generateMetadata({
       .maybeSingle();
 
     if (!category) {
-      return { title: `${readableTitle} | AI.DY` };
+      return {
+        title: `${readableTitle} | AI.DY`,
+        alternates: { canonical: `/categories/${slug}` },
+      };
     }
 
     return {
@@ -57,6 +63,7 @@ export async function generateMetadata({
         category.seo_description ??
         category.description ??
         `أفضل أدوات ${category.name} بالعربية.`,
+      alternates: { canonical: `/categories/${slug}` },
     };
   } catch {
     return { title: `${readableTitle} | AI.DY` };

@@ -9,7 +9,7 @@ import { Pagination } from "./pagination";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "كل الأدوات | AI.DY",
+  title: "كل الأدوات",
   description:
     "تصفح كل أدوات الذكاء الاصطناعي المتاحة على AI.DY. فلتر بالفئة، السعر، والتقييم. قارن واختر الأنسب.",
   keywords: [
@@ -20,6 +20,7 @@ export const metadata: Metadata = {
     "مقارنة",
     "تقييمات",
   ],
+  alternates: { canonical: "/tools" },
 };
 
 type SearchParams = {

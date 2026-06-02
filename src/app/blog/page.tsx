@@ -1,8 +1,9 @@
 import Link from "next/link";
 
 export const metadata = {
-  title: "المدونة | AI.DY",
+  title: "المدونة",
   description: "مقالات ونصائح عن أدوات الذكاء الاصطناعي وكيفية استخدامها في عملك وحياتك اليومية.",
+  alternates: { canonical: "/blog" },
 };
 
 export default function BlogPage() {

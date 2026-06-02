@@ -27,7 +27,13 @@ const tajawal = Tajawal({
 });
 
 export const metadata: Metadata = {
-  title: "AI.DY — دليلك لأدوات الذكاء الاصطناعي",
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"
+  ),
+  title: {
+    default: "AI.DY — دليلك لأدوات الذكاء الاصطناعي",
+    template: "%s | AI.DY",
+  },
   description:
     "اكتشف، قارن، واختر أفضل أدوات الذكاء الاصطناعي. مراجعات، أسعار، وبدائل لكل أداة تحتاجها.",
   keywords: [
@@ -38,6 +44,27 @@ export const metadata: Metadata = {
     "Midjourney",
     "مراجعات",
   ],
+  alternates: {
+    canonical: "/",
+    languages: {
+      ar: "/",
+    },
+  },
+  openGraph: {
+    type: "website",
+    siteName: "AI.DY",
+    locale: "ar_EG",
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
 };
 
 export default function RootLayout({
