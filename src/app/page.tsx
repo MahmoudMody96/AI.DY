@@ -57,28 +57,35 @@ function pricingLabel(type: string | null, monthly: number | null): string {
 export default async function Home() {
   const supabase = await createClient();
 
-  // Fetch in parallel
-  const [categoriesRes, featuredRes, statsRes] = await Promise.all([
-    supabase
-      .from("categories")
-      .select("id, slug, name, name_en, description, icon, color, position")
-      .eq("is_active", true)
-      .order("position", { ascending: true }),
-    supabase
-      .from("tools")
-      .select(
-        "id, slug, name, name_en, tagline, description, website_url, logo_url, pricing_type, starting_price, monthly_price, rating_avg, rating_count, is_featured, category:categories(id, name, slug, icon, color)"
-      )
-      .eq("is_published", true)
-      .eq("is_featured", true)
-      .order("rating_avg", { ascending: false })
-      .limit(6),
-    supabase.from("tools").select("id", { count: "exact", head: true }),
-  ]);
+  // Default empty state if Supabase is not configured (e.g. missing env vars)
+  let categories: Category[] = [];
+  let featured: Tool[] = [];
+  let totalTools = 0;
 
-  const categories = (categoriesRes.data as Category[] | null) ?? [];
-  const featured = (featuredRes.data as unknown as Tool[] | null) ?? [];
-  const totalTools = statsRes.count ?? 0;
+  if (supabase) {
+    // Fetch in parallel
+    const [categoriesRes, featuredRes, statsRes] = await Promise.all([
+      supabase
+        .from("categories")
+        .select("id, slug, name, name_en, description, icon, color, position")
+        .eq("is_active", true)
+        .order("position", { ascending: true }),
+      supabase
+        .from("tools")
+        .select(
+          "id, slug, name, name_en, tagline, description, website_url, logo_url, pricing_type, starting_price, monthly_price, rating_avg, rating_count, is_featured, category:categories(id, name, slug, icon, color)"
+        )
+        .eq("is_published", true)
+        .eq("is_featured", true)
+        .order("rating_avg", { ascending: false })
+        .limit(6),
+      supabase.from("tools").select("id", { count: "exact", head: true }),
+    ]);
+
+    categories = (categoriesRes.data as Category[] | null) ?? [];
+    featured = (featuredRes.data as unknown as Tool[] | null) ?? [];
+    totalTools = statsRes.count ?? 0;
+  }
 
   return (
     <div className="flex flex-col flex-1">
