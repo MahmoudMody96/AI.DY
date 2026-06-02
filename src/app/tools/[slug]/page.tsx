@@ -54,7 +54,7 @@ export async function generateMetadata({
     const supabase = await createClient();
     if (!supabase) {
       return {
-        title: `${readableTitle} | AI.DY`,
+        title: readableTitle,
         alternates: { canonical: `/tools/${slug}` },
       };
     }
@@ -68,14 +68,16 @@ export async function generateMetadata({
 
     if (!tool) {
       return {
-        title: `${readableTitle} | AI.DY`,
+        title: readableTitle,
         description: `اقرأ عن ${readableTitle} — أداة ذكاء اصطناعي.`,
         alternates: { canonical: `/tools/${slug}` },
       };
     }
 
     return {
-      title: tool.seo_title ?? `${tool.name} | AI.DY`,
+      // The root layout applies a `%s | AI.DY` template, so return the
+      // raw name here. Strip the suffix if seo_title already includes it.
+      title: tool.seo_title?.replace(/\s*\|\s*AI\.DY\s*$/i, "") ?? tool.name,
       description:
         tool.seo_description ??
         tool.tagline ??
@@ -84,7 +86,7 @@ export async function generateMetadata({
       alternates: { canonical: `/tools/${slug}` },
     };
   } catch {
-    return { title: `${readableTitle} | AI.DY` };
+    return { title: readableTitle };
   }
 }
 

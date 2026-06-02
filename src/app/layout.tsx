@@ -65,6 +65,7 @@ export const metadata: Metadata = {
     type: "website",
     siteName: "AI.DY",
     locale: "ar_EG",
+    url: "/",
   },
   robots: {
     index: true,
