@@ -9,7 +9,7 @@
 // NEVER expose to the client.
 // ============================================
 
-import { createClient, type SupabaseClient } from '@supabase/supabase-js';
+import { createClient as createSupabaseClient, type SupabaseClient } from '@supabase/supabase-js';
 import { getServerEnv } from '@/lib/env';
 
 let _admin: SupabaseClient | null = null;
@@ -23,7 +23,7 @@ export function createAdminClient(): SupabaseClient | null {
     }
     return null;
   }
-  _admin = createClient(env.NEXT_PUBLIC_SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY, {
+  _admin = createSupabaseClient(env.NEXT_PUBLIC_SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY, {
     auth: { persistSession: false, autoRefreshToken: false },
   });
   return _admin;

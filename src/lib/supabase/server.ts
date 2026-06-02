@@ -8,7 +8,7 @@
 // ============================================
 
 import { createServerClient, type CookieOptions } from '@supabase/ssr';
-import { createClient, type SupabaseClient } from '@supabase/supabase-js';
+import { createClient as createSupabaseClient, type SupabaseClient } from '@supabase/supabase-js';
 import { cookies } from 'next/headers';
 import { getServerEnv } from '@/lib/env';
 
@@ -57,7 +57,7 @@ async function buildClient(): Promise<SupabaseClient | null> {
 
   // Plain anonymous client — works for all public read queries
   // under RLS. Sufficient for /api/tools, /api/categories, etc.
-  return createClient(getSupabaseUrl(), getSupabaseAnonKey());
+  return createSupabaseClient(getSupabaseUrl(), getSupabaseAnonKey());
 }
 
 /**
