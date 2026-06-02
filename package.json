@@ -2,6 +2,7 @@
   "name": "ai-dy",
   "version": "0.1.0",
   "private": true,
+  "packageManager": "pnpm@10.0.0",
   "description": "AI.DY — أكبر منصة Demo-First لأدوات AI في المنطقة العربية",
   "scripts": {
     "dev": "next dev",
