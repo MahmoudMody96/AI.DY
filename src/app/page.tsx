@@ -1,5 +1,8 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import { ToolCard } from "@/components/ui/tool-card";
+import { CategoryCard } from "@/components/ui/category-card";
+import { Button } from "@/components/ui/button";
 
 type Category = {
   id: string;
@@ -30,40 +33,14 @@ type Tool = {
   category: Pick<Category, "id" | "name" | "slug" | "icon" | "color"> | null;
 };
 
-const CATEGORY_ICON_MAP: Record<string, string> = {
-  Bot: "🤖",
-  PenTool: "✍️",
-  ImageIcon: "🎨",
-  Code: "💻",
-  Video: "🎬",
-  Music: "🎵",
-  Workflow: "⚙️",
-  Search: "🔍",
-};
-
-function categoryEmoji(icon: string | null | undefined): string {
-  if (!icon) return "✨";
-  return CATEGORY_ICON_MAP[icon] ?? "✨";
-}
-
-function pricingLabel(type: string | null, monthly: number | null): string {
-  if (type === "free") return "مجاني";
-  if (type === "freemium") return "مجاني + مدفوع";
-  if (type === "paid" && monthly != null) return `$${monthly}/شهر`;
-  if (type === "paid") return "مدفوع";
-  return "—";
-}
-
 export default async function Home() {
   const supabase = await createClient();
 
-  // Default empty state if Supabase is not configured (e.g. missing env vars)
   let categories: Category[] = [];
   let featured: Tool[] = [];
   let totalTools = 0;
 
   if (supabase) {
-    // Fetch in parallel
     const [categoriesRes, featuredRes, statsRes] = await Promise.all([
       supabase
         .from("categories")
@@ -112,18 +89,12 @@ export default async function Home() {
               مراجعات، أسعار، وبدائل لكل أداة تحتاجها في شغلك أو حياتك اليومية.
             </p>
             <div className="mt-10 flex flex-col gap-4 sm:flex-row">
-              <Link
-                href="/tools"
-                className="inline-flex h-12 items-center justify-center rounded-full bg-violet-600 px-8 text-base font-semibold text-white shadow-lg shadow-violet-500/30 transition hover:bg-violet-700"
-              >
-                استكشف الأدوات
-              </Link>
-              <Link
-                href="/categories"
-                className="inline-flex h-12 items-center justify-center rounded-full border border-zinc-300 bg-white px-8 text-base font-semibold text-zinc-900 transition hover:border-zinc-400 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:bg-zinc-800"
-              >
-                تصفح الفئات
-              </Link>
+              <Button asChild size="lg">
+                <Link href="/tools">استكشف الأدوات</Link>
+              </Button>
+              <Button asChild size="lg" variant="outline">
+                <Link href="/categories">تصفح الفئات</Link>
+              </Button>
             </div>
           </div>
         </div>
@@ -146,36 +117,11 @@ export default async function Home() {
           </Link>
         </div>
 
-        {categories.length === 0 ? (
-          <p className="rounded-2xl border border-dashed border-zinc-300 p-8 text-center text-zinc-500 dark:border-zinc-700">
-            لا توجد فئات متاحة حاليًا.
-          </p>
-        ) : (
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-            {categories.map((cat) => (
-              <Link
-                key={cat.id}
-                href={`/categories/${cat.slug}`}
-                className="group relative overflow-hidden rounded-2xl border border-zinc-200 bg-white p-5 transition hover:-translate-y-1 hover:shadow-lg dark:border-zinc-800 dark:bg-zinc-900"
-              >
-                <div
-                  className="mb-3 inline-flex h-12 w-12 items-center justify-center rounded-xl text-2xl"
-                  style={{
-                    backgroundColor: cat.color ? `${cat.color}1A` : "#7c3aed1A",
-                  }}
-                >
-                  {categoryEmoji(cat.icon)}
-                </div>
-                <h3 className="font-bold text-zinc-900 dark:text-zinc-50">
-                  {cat.name}
-                </h3>
-                <p className="mt-1 line-clamp-2 text-sm text-zinc-600 dark:text-zinc-400">
-                  {cat.description ?? cat.name_en}
-                </p>
-              </Link>
-            ))}
-          </div>
-        )}
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+          {categories.map((cat) => (
+            <CategoryCard key={cat.id} category={cat} variant="compact" />
+          ))}
+        </div>
       </section>
 
       {/* ===== Featured Tools ===== */}
@@ -198,50 +144,11 @@ export default async function Home() {
             </Link>
           </div>
 
-          {featured.length === 0 ? (
-            <p className="rounded-2xl border border-dashed border-zinc-300 p-8 text-center text-zinc-500 dark:border-zinc-700">
-              لا توجد أدوات مميزة حاليًا.
-            </p>
-          ) : (
-            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-              {featured.map((tool) => (
-                <Link
-                  key={tool.id}
-                  href={`/tools/${tool.slug}`}
-                  className="group flex flex-col rounded-2xl border border-zinc-200 bg-white p-6 transition hover:-translate-y-1 hover:shadow-xl dark:border-zinc-800 dark:bg-zinc-900"
-                >
-                  <div className="mb-4 flex items-start justify-between">
-                    <div
-                      className="flex h-12 w-12 items-center justify-center rounded-xl text-xl font-bold text-white"
-                      style={{
-                        backgroundColor:
-                          tool.category?.color ?? "#7c3aed",
-                      }}
-                    >
-                      {categoryEmoji(tool.category?.icon)}
-                    </div>
-                    <span className="rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-800 dark:bg-amber-950/50 dark:text-amber-300">
-                      ⭐ {tool.rating_avg?.toFixed(1) ?? "—"}
-                    </span>
-                  </div>
-                  <h3 className="text-xl font-bold text-zinc-900 dark:text-zinc-50">
-                    {tool.name}
-                  </h3>
-                  <p className="mt-1 line-clamp-2 text-sm text-zinc-600 dark:text-zinc-400">
-                    {tool.tagline ?? tool.description}
-                  </p>
-                  <div className="mt-auto flex items-center justify-between pt-5 text-sm">
-                    <span className="text-zinc-500 dark:text-zinc-400">
-                      {tool.category?.name ?? "—"}
-                    </span>
-                    <span className="font-semibold text-violet-600 dark:text-violet-400">
-                      {pricingLabel(tool.pricing_type, tool.monthly_price)}
-                    </span>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          )}
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {featured.map((tool) => (
+              <ToolCard key={tool.id} tool={tool} />
+            ))}
+          </div>
         </div>
       </section>
 
@@ -255,12 +162,9 @@ export default async function Home() {
             قارن بين {totalTools} أداة في {categories.length} فئات. كل اللي
             محتاجه في مكان واحد.
           </p>
-          <Link
-            href="/tools"
-            className="mt-8 inline-flex h-12 items-center justify-center rounded-full bg-white px-8 text-base font-semibold text-violet-700 transition hover:bg-zinc-100"
-          >
-            ابدأ الاستكشاف
-          </Link>
+          <Button asChild size="lg" className="mt-8 bg-white text-violet-700 hover:bg-zinc-100">
+            <Link href="/tools">ابدأ الاستكشاف</Link>
+          </Button>
         </div>
       </section>
 
