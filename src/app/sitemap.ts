@@ -1,6 +1,23 @@
 import type { MetadataRoute } from "next";
-import { getPublicEnvSafe } from "@/lib/env";
 import { createClient } from "@/lib/supabase/server";
+
+/**
+ * Resolve the canonical site URL with sensible fallbacks.
+ * Priority: NEXT_PUBLIC_SITE_URL (set in prod env) → VERCEL_URL (Vercel
+ * auto-deploys) → VERCEL_PROJECT_PRODUCTION_URL → localhost.
+ */
+function getBaseUrl(): string {
+  if (process.env.NEXT_PUBLIC_SITE_URL) {
+    return process.env.NEXT_PUBLIC_SITE_URL.replace(/\/+$/, "");
+  }
+  if (process.env.VERCEL_PROJECT_PRODUCTION_URL) {
+    return `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`;
+  }
+  if (process.env.VERCEL_URL) {
+    return `https://${process.env.VERCEL_URL}`;
+  }
+  return "http://localhost:3000";
+}
 
 /**
  * Dynamic sitemap for AI.DY.
@@ -8,8 +25,7 @@ import { createClient } from "@/lib/supabase/server";
  * Future: blog posts will be added when the admin content engine lands.
  */
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const env = getPublicEnvSafe();
-  const baseUrl = env?.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+  const baseUrl = getBaseUrl();
 
   const now = new Date();
   const staticEntries: MetadataRoute.Sitemap = [

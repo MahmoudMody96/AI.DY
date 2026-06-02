@@ -1,5 +1,21 @@
 import type { MetadataRoute } from "next";
-import { getPublicEnvSafe } from "@/lib/env";
+
+/**
+ * Resolve the canonical site URL with sensible fallbacks.
+ * Priority: NEXT_PUBLIC_SITE_URL → VERCEL_PROJECT_PRODUCTION_URL → VERCEL_URL → localhost.
+ */
+function getBaseUrl(): string {
+  if (process.env.NEXT_PUBLIC_SITE_URL) {
+    return process.env.NEXT_PUBLIC_SITE_URL.replace(/\/+$/, "");
+  }
+  if (process.env.VERCEL_PROJECT_PRODUCTION_URL) {
+    return `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`;
+  }
+  if (process.env.VERCEL_URL) {
+    return `https://${process.env.VERCEL_URL}`;
+  }
+  return "http://localhost:3000";
+}
 
 /**
  * robots.txt for AI.DY.
@@ -8,8 +24,7 @@ import { getPublicEnvSafe } from "@/lib/env";
  * - Point to the sitemap
  */
 export default function robots(): MetadataRoute.Robots {
-  const env = getPublicEnvSafe();
-  const baseUrl = env?.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+  const baseUrl = getBaseUrl();
 
   return {
     rules: [
