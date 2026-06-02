@@ -1,5 +1,9 @@
 @import "tailwindcss";
 
+/* Use class-based dark mode (next-themes adds `.dark` to <html>),
+   not the default prefers-color-scheme media query. */
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme inline {
   --color-background: hsl(var(--background));
   --color-foreground: hsl(var(--foreground));
