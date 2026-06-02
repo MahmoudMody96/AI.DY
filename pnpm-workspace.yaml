@@ -1,0 +1,9 @@
+allowBuilds:
+  sharp: set this to true or false
+  unrs-resolver: set this to true or false
+# pnpm config — approve build scripts for these packages.
+# sharp: image optimization (Next.js)
+# unrs-resolver: module resolution (Next.js webpack)
+onlyBuiltDependencies:
+  - sharp
+  - unrs-resolver
