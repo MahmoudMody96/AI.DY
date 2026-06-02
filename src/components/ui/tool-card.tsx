@@ -19,6 +19,16 @@ function categoryEmoji(icon: string | null | undefined): string {
   return CATEGORY_ICONS[icon] ?? "✨";
 }
 
+function getInitials(name: string): string {
+  return name
+    .split(/\s+/)
+    .map((w) => w[0])
+    .filter(Boolean)
+    .slice(0, 2)
+    .join("")
+    .toUpperCase();
+}
+
 type Tool = {
   id: string;
   slug: string;
@@ -42,10 +52,15 @@ export function ToolCard({ tool, className }: { tool: Tool; className?: string }
     >
       <div className="mb-4 flex items-start justify-between">
         <div
-          className="flex h-12 w-12 items-center justify-center rounded-xl text-xl font-bold text-white"
+          className="relative flex h-12 w-12 items-center justify-center overflow-hidden rounded-xl text-xl font-bold text-white"
           style={{ backgroundColor: tool.category?.color ?? "#7c3aed" }}
         >
-          {categoryEmoji(tool.category?.icon)}
+          {/* Icon or fallback to first-letter avatar */}
+          {tool.category?.icon && CATEGORY_ICONS[tool.category.icon] ? (
+            <span aria-hidden>{CATEGORY_ICONS[tool.category.icon]}</span>
+          ) : (
+            <span aria-hidden>{getInitials(tool.name)}</span>
+          )}
         </div>
         {tool.rating_avg != null && (
           <RatingStars rating={tool.rating_avg} count={tool.rating_count} showCount={false} />

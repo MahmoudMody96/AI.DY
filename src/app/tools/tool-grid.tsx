@@ -16,6 +16,16 @@ function categoryEmoji(icon: string | null | undefined): string {
   return CATEGORY_ICONS[icon] ?? "✨";
 }
 
+function getInitials(name: string): string {
+  return name
+    .split(/\s+/)
+    .map((w) => w[0])
+    .filter(Boolean)
+    .slice(0, 2)
+    .join("")
+    .toUpperCase();
+}
+
 function pricingLabel(type: string | null, monthly: number | null): string {
   if (type === "free") return "مجاني";
   if (type === "freemium") return "مجاني + مدفوع";
@@ -48,10 +58,12 @@ export function ToolGrid({ tools }: { tools: Tool[] }) {
         >
           <div className="mb-4 flex items-start justify-between">
             <div
-              className="flex h-12 w-12 items-center justify-center rounded-xl text-xl font-bold text-white"
+              className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-xl text-xl font-bold text-white"
               style={{ backgroundColor: tool.category?.color ?? "#7c3aed" }}
             >
-              {categoryEmoji(tool.category?.icon)}
+              {tool.category?.icon && CATEGORY_ICONS[tool.category.icon]
+                ? CATEGORY_ICONS[tool.category.icon]
+                : getInitials(tool.name)}
             </div>
             {tool.rating_avg != null && (
               <span className="rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-800 dark:bg-amber-950/50 dark:text-amber-300">

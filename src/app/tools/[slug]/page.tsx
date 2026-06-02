@@ -43,22 +43,44 @@ export async function generateMetadata({
   params: Promise<Params>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const supabase = await createClient();
-  if (!supabase) return { title: "أداة غير موجودة | AI.DY" };
 
-  const { data: tool } = await supabase
-    .from("tools")
-    .select("name, name_en, tagline, description, seo_title, seo_description")
-    .eq("slug", slug)
-    .eq("is_published", true)
-    .maybeSingle();
+  // Format slug to a readable title as a safe default
+  const readableTitle = slug
+    .split("-")
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(" ");
 
-  if (!tool) return { title: "أداة غير موجودة | AI.DY" };
+  try {
+    const supabase = await createClient();
+    if (!supabase) {
+      return { title: `${readableTitle} | AI.DY` };
+    }
 
-  return {
-    title: tool.seo_title ?? `${tool.name} | AI.DY`,
-    description: tool.seo_description ?? tool.tagline ?? tool.description ?? undefined,
-  };
+    const { data: tool } = await supabase
+      .from("tools")
+      .select("name, tagline, description, seo_title, seo_description")
+      .eq("slug", slug)
+      .eq("is_published", true)
+      .maybeSingle();
+
+    if (!tool) {
+      return {
+        title: `${readableTitle} | AI.DY`,
+        description: `اقرأ عن ${readableTitle} — أداة ذكاء اصطناعي.`,
+      };
+    }
+
+    return {
+      title: tool.seo_title ?? `${tool.name} | AI.DY`,
+      description:
+        tool.seo_description ??
+        tool.tagline ??
+        tool.description ??
+        `اقرأ عن ${tool.name} — أداة ذكاء اصطناعي.`,
+    };
+  } catch {
+    return { title: `${readableTitle} | AI.DY` };
+  }
 }
 
 export default async function ToolDetailPage({

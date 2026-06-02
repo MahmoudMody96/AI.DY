@@ -28,22 +28,39 @@ export async function generateMetadata({
   params: Promise<Params>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const supabase = await createClient();
-  if (!supabase) return { title: "فئة غير موجودة | AI.DY" };
 
-  const { data: category } = await supabase
-    .from("categories")
-    .select("name, name_en, description, seo_title, seo_description")
-    .eq("slug", slug)
-    .eq("is_active", true)
-    .maybeSingle();
+  const readableTitle = slug
+    .split("-")
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(" ");
 
-  if (!category) return { title: "فئة غير موجودة | AI.DY" };
+  try {
+    const supabase = await createClient();
+    if (!supabase) {
+      return { title: `${readableTitle} | AI.DY` };
+    }
 
-  return {
-    title: category.seo_title ?? `${category.name} | AI.DY`,
-    description: category.seo_description ?? category.description ?? `أفضل أدوات ${category.name} بالعربية.`,
-  };
+    const { data: category } = await supabase
+      .from("categories")
+      .select("name, description, seo_title, seo_description")
+      .eq("slug", slug)
+      .eq("is_active", true)
+      .maybeSingle();
+
+    if (!category) {
+      return { title: `${readableTitle} | AI.DY` };
+    }
+
+    return {
+      title: category.seo_title ?? `${category.name} | AI.DY`,
+      description:
+        category.seo_description ??
+        category.description ??
+        `أفضل أدوات ${category.name} بالعربية.`,
+    };
+  } catch {
+    return { title: `${readableTitle} | AI.DY` };
+  }
 }
 
 export default async function CategoryPage({
@@ -56,31 +73,34 @@ export default async function CategoryPage({
 
   if (!supabase) notFound();
 
-  // Fetch category + tools in parallel
-  const [categoryRes, toolsRes] = await Promise.all([
-    supabase
-      .from("categories")
-      .select("id, slug, name, name_en, description, icon, color")
-      .eq("slug", slug)
-      .eq("is_active", true)
-      .maybeSingle(),
-    supabase
-      .from("tools")
-      .select(
-        `id, slug, name, name_en, tagline, description, website_url, logo_url,
-        pricing_type, starting_price, monthly_price, rating_avg, rating_count,
-        category:categories(id, name, slug, icon, color)`
-      )
-      .eq("is_published", true)
-      .eq("status", "published")
-      .eq("category.slug", slug)
-      .order("rating_avg", { ascending: false }),
-  ]);
+  // Step 1: fetch category by slug
+  const { data: category, error: catError } = await supabase
+    .from("categories")
+    .select("id, slug, name, name_en, description, icon, color")
+    .eq("slug", slug)
+    .eq("is_active", true)
+    .maybeSingle();
 
-  if (categoryRes.error || !categoryRes.data) notFound();
+  if (catError || !category) notFound();
 
-  const category = categoryRes.data;
-  const tools = (toolsRes.data as unknown as Parameters<typeof ToolGrid>[0]["tools"]) ?? [];
+  // Step 2: fetch tools in this category using category_id
+  const { data: toolsData, error: toolsError } = await supabase
+    .from("tools")
+    .select(
+      `id, slug, name, name_en, tagline, description, website_url, logo_url,
+      pricing_type, starting_price, monthly_price, rating_avg, rating_count,
+      category:categories(id, name, slug, icon, color)`
+    )
+    .eq("is_published", true)
+    .eq("status", "published")
+    .eq("category_id", category.id)
+    .order("rating_avg", { ascending: false });
+
+  if (toolsError) {
+    console.error("Tools fetch error:", toolsError);
+  }
+
+  const tools = (toolsData as unknown as Parameters<typeof ToolGrid>[0]["tools"]) ?? [];
 
   return (
     <div className="flex flex-col flex-1">
