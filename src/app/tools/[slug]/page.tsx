@@ -2,9 +2,12 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { ToolGrid } from "../tool-grid";
+import { ToolLogoServer } from "@/components/brand/tool-logo-server";
 import type { Metadata } from "next";
 
-const CATEGORY_ICONS: Record<string, string> = {
+const CATEGORY_ICONS_UNUSED = {
+  // Kept for backward-compat with any imports; emoji icons are being phased out
+  // in favor of real brand logos via ToolLogoServer.
   Bot: "🤖",
   PenTool: "✍️",
   ImageIcon: "🎨",
@@ -13,11 +16,11 @@ const CATEGORY_ICONS: Record<string, string> = {
   Music: "🎵",
   Workflow: "⚙️",
   Search: "🔍",
-};
+} as const;
 
 function categoryEmoji(icon: string | null | undefined): string {
   if (!icon) return "✨";
-  return CATEGORY_ICONS[icon] ?? "✨";
+  return CATEGORY_ICONS_UNUSED[icon as keyof typeof CATEGORY_ICONS_UNUSED] ?? "✨";
 }
 
 function pricingLabel(type: string | null, monthly: number | null): string {
@@ -217,10 +220,14 @@ export default async function ToolDetailPage({
           <div className="flex flex-col gap-6 sm:flex-row sm:items-start">
             {/* Logo / Icon */}
             <div
-              className="flex h-24 w-24 shrink-0 items-center justify-center rounded-2xl text-5xl"
-              style={{ backgroundColor: `${toolCategory?.color ?? "#7c3aed"}20` }}
+              className="flex h-24 w-24 shrink-0 items-center justify-center rounded-2xl bg-white p-2 ring-1 ring-zinc-200 dark:bg-zinc-900 dark:ring-zinc-800"
             >
-              {categoryEmoji(toolCategory?.icon)}
+              <ToolLogoServer
+                slug={tool.slug}
+                name={tool.name}
+                size={80}
+                rounded="xl"
+              />
             </div>
 
             {/* Title + meta */}

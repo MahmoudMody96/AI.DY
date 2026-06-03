@@ -14,6 +14,7 @@ import {
   ExternalLink,
   type LucideIcon,
 } from "lucide-react";
+import { Logo } from "@/components/brand/logo";
 
 type NavItem = {
   href: string;
@@ -40,11 +41,11 @@ export function AdminSidebar() {
   return (
     <aside className="fixed inset-y-0 left-0 z-50 hidden w-64 border-r border-zinc-200 bg-white lg:block dark:border-zinc-800 dark:bg-zinc-900">
       <div className="flex h-16 items-center border-b border-zinc-200 px-6 dark:border-zinc-800">
-        <Link href="/admin" className="flex items-center gap-2 font-semibold tracking-tight">
-          <div className="flex h-7 w-7 items-center justify-center rounded-md bg-violet-600 text-white">
-            <span className="text-sm font-black">A</span>
-          </div>
-          <span>AI.DY Admin</span>
+        <Link href="/admin" className="flex items-center">
+          <Logo size="sm" />
+          <span className="ml-2 text-xs font-semibold uppercase tracking-wider text-zinc-500">
+            Admin
+          </span>
         </Link>
       </div>
       <nav className="flex flex-col gap-0.5 p-3">

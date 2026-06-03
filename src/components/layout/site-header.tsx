@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
+import { Logo } from "@/components/brand/logo";
 import { UserMenu } from "./user-menu";
 import { Settings } from "lucide-react";
 
@@ -27,9 +28,7 @@ export async function SiteHeader() {
   return (
     <header className="sticky top-0 z-40 border-b border-zinc-200 bg-white/80 backdrop-blur-md dark:border-zinc-800 dark:bg-zinc-950/80">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-6">
-        <Link href="/" className="flex items-center gap-2 text-xl font-black tracking-tight">
-          <span className="gradient-text">AI.DY</span>
-        </Link>
+        <Logo href="/" size="md" />
 
         <nav className="hidden items-center gap-6 md:flex">
           <Link href="/tools" className="text-sm font-medium text-zinc-700 hover:text-violet-600 dark:text-zinc-300">
