@@ -50,12 +50,15 @@ export async function generateMetadata({
   if (!post) {
     return { title: "مقال غير موجود", alternates: { canonical: `/blog/${slug}` } };
   }
+  // Strip trailing " | AI.DY" if present (the layout applies the template)
+  const stripSuffix = (t: string | null | undefined) =>
+    t?.replace(/\s*\|\s*AI\.DY\s*$/i, "") ?? null;
   return {
-    title: post.meta_title ?? post.title,
+    title: stripSuffix(post.meta_title) ?? post.title,
     description: post.meta_description ?? post.excerpt ?? undefined,
     alternates: { canonical: `/blog/${slug}` },
     openGraph: {
-      title: post.meta_title ?? post.title,
+      title: stripSuffix(post.meta_title) ?? post.title,
       description: post.excerpt ?? post.meta_description ?? undefined,
       type: "article",
       images: post.cover_url ? [post.cover_url] : undefined,
@@ -75,18 +78,27 @@ export default async function BlogPostPage({
   const { data: post, error } = await supabase
     .from("articles")
     .select(
-      "id, slug, title, excerpt, content_mdx, cover_url, tags, reading_time, published_at, author_id, category_id, views_count"
+      "id, slug, title, excerpt, content_mdx, cover_url, tags, reading_time, published_at, author_id, category_id"
     )
     .eq("slug", slug)
     .eq("status", "published")
-    .maybeSingle<Post & { views_count: number | null }>();
+    .maybeSingle<Post>();
   if (error || !post) notFound();
+  const viewsCount = (post as unknown as { views_count: number | null }).views_count ?? 0;
 
-  // Increment views (fire-and-forget)
-  void supabase
-    .from("articles")
-    .update({ views_count: (post.views_count ?? 0) + 1 })
-    .eq("id", post.id);
+  // Increment views (fire-and-forget). Wrapped in IIFE so any
+  // rejection from RLS-deny doesn't surface as an unhandled
+  // promise rejection.
+  void (async () => {
+    try {
+      await supabase
+        .from("articles")
+        .update({ views_count: viewsCount + 1 })
+        .eq("id", post.id);
+    } catch {
+      // Best-effort: don't let view tracking fail the render.
+    }
+  })();
 
   // Resolve target tools by slug (post.tags may include tool slugs)
   const targetToolSlugs = (post.tags ?? []).filter((t) =>
