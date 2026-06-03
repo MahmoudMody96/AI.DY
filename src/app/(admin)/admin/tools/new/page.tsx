@@ -1,10 +1,10 @@
 import { notFound, redirect } from "next/navigation";
-import { createAdminClient } from "@/lib/supabase/admin";
+import { createClient } from "@/lib/supabase/server";
 import { saveTool } from "../actions";
 import { Label } from "../../_components/form-helpers";
 
 export default async function NewToolPage() {
-  const admin = createAdminClient();
+  const admin = await createClient();
   if (!admin) redirect("/admin/tools");
 
   const { data: categories } = await admin

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import { createAdminClient } from "@/lib/supabase/admin";
+import { createClient } from "@/lib/supabase/server";
 import { saveTool, deleteTool } from "../../actions";
 
 const PRICING_TYPES = ["free", "freemium", "paid", "contact"] as const;
@@ -14,7 +14,7 @@ export default async function EditToolPage({
 }) {
   const { id } = await params;
   const { saved } = await searchParams;
-  const admin = createAdminClient();
+  const admin = await createClient();
   if (!admin) redirect("/admin/tools");
 
   const isNew = id === "new";

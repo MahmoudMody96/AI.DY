@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { createAdminClient } from "@/lib/supabase/admin";
+import { createClient } from "@/lib/supabase/server";
 import {
   Wrench,
   FolderTree,
@@ -29,7 +29,7 @@ async function getStats(): Promise<{
   pendingReviews: number;
   draftPosts: number;
 }> {
-  const admin = createAdminClient();
+  const admin = await createClient();
   if (!admin) {
     return {
       stats: [],

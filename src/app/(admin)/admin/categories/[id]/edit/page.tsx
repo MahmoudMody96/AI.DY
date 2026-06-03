@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import { createAdminClient } from "@/lib/supabase/admin";
+import { createClient } from "@/lib/supabase/server";
 import { saveCategory, deleteCategory } from "../../actions";
 import { Input, Label } from "../../../_components/form-helpers";
 
@@ -13,7 +13,7 @@ export default async function EditCategoryPage({
 }) {
   const { id } = await params;
   const { saved } = await searchParams;
-  const admin = createAdminClient();
+  const admin = await createClient();
   if (!admin) redirect("/admin/categories");
 
   const isNew = id === "new";

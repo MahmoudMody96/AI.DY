@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Star } from "lucide-react";
-import { createAdminClient } from "@/lib/supabase/admin";
+import { createClient } from "@/lib/supabase/server";
 import { moderateReview } from "./actions";
 
 function timeAgo(iso: string | null | undefined): string {
@@ -18,7 +18,7 @@ function timeAgo(iso: string | null | undefined): string {
 }
 
 export default async function AdminReviewsPage() {
-  const admin = createAdminClient();
+  const admin = await createClient();
   if (!admin) return <div className="text-zinc-500">Admin client unavailable</div>;
 
   const { data: pending } = await admin

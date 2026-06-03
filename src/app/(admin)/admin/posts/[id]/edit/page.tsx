@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import { createAdminClient } from "@/lib/supabase/admin";
+import { createClient } from "@/lib/supabase/server";
 import { savePost, deletePost, publishPost } from "../../actions";
 import { Input, Label } from "../../../_components/form-helpers";
 
@@ -13,7 +13,7 @@ export default async function EditPostPage({
 }) {
   const { id } = await params;
   const { saved, published } = await searchParams;
-  const admin = createAdminClient();
+  const admin = await createClient();
   if (!admin) redirect("/admin/posts");
 
   const isNew = id === "new";

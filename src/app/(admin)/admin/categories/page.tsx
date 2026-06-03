@@ -1,9 +1,9 @@
 import Link from "next/link";
-import { createAdminClient } from "@/lib/supabase/admin";
+import { createClient } from "@/lib/supabase/server";
 import { Plus } from "lucide-react";
 
 export default async function AdminCategoriesPage() {
-  const admin = createAdminClient();
+  const admin = await createClient();
   if (!admin) {
     return <div className="text-zinc-500">Admin client unavailable</div>;
   }

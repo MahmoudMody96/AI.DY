@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { createAdminClient } from "@/lib/supabase/admin";
+import { createClient } from "@/lib/supabase/server";
 import { Plus, Search } from "lucide-react";
 
 type SearchParams = { q?: string; status?: string };
@@ -10,7 +10,7 @@ export default async function AdminToolsPage({
   searchParams: Promise<SearchParams>;
 }) {
   const { q, status } = await searchParams;
-  const admin = createAdminClient();
+  const admin = await createClient();
 
   let tools: Array<{
     id: string;

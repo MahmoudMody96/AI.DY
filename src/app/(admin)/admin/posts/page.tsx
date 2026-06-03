@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { createAdminClient } from "@/lib/supabase/admin";
+import { createClient } from "@/lib/supabase/server";
 import { Plus, FileText, CheckCircle2, Clock, Archive } from "lucide-react";
 
 function relativeTime(iso: string | null | undefined): string {
@@ -17,7 +17,7 @@ function relativeTime(iso: string | null | undefined): string {
 }
 
 export default async function AdminPostsPage() {
-  const admin = createAdminClient();
+  const admin = await createClient();
   if (!admin) return <div className="text-zinc-500">Admin client unavailable</div>;
 
   const { data: posts } = await admin
