@@ -2,7 +2,6 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { createAdminClient } from "@/lib/supabase/admin";
 import { AdminSidebar } from "./_components/admin-sidebar";
 import { AdminTopbar } from "./_components/admin-topbar";
 
@@ -25,16 +24,14 @@ export default async function AdminLayout({
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const admin = createAdminClient();
-  let profile: { role: string; display_name: string | null; email: string | null; avatar_url: string | null } | null = null;
-  if (admin) {
-    const { data } = await admin
-      .from("profiles")
-      .select("role, display_name, email, avatar_url")
-      .eq("id", user.id)
-      .maybeSingle();
-    profile = data;
-  }
+  // Use the user-scoped client (RLS allows users to read their own + public profile fields).
+  // This avoids needing SUPABASE_SERVICE_ROLE_KEY to be set on Vercel.
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role, display_name, email, avatar_url")
+    .eq("id", user.id)
+    .maybeSingle<{ role: string; display_name: string | null; email: string | null; avatar_url: string | null }>();
+
   if (!profile || (profile.role !== "admin" && profile.role !== "super_admin")) {
     redirect("/?error=admin_required");
   }

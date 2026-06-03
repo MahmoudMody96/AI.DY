@@ -1,6 +1,5 @@
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { type NextRequest, NextResponse } from "next/server";
-import { createAdminClient } from "@/lib/supabase/admin";
 
 const PUBLIC_ROUTES = [
   "/",
@@ -67,21 +66,18 @@ export async function updateSession(request: NextRequest) {
 
   // Enforce admin role for /admin/* routes
   if (user && isAdminRoute(request.nextUrl.pathname)) {
-    const admin = createAdminClient();
-    if (admin) {
-      const { data: profile } = await admin
-        .from("profiles")
-        .select("role")
-        .eq("id", user.id)
-        .maybeSingle();
-      const isAdmin = profile?.role === "admin" || profile?.role === "super_admin";
-      if (!isAdmin) {
-        // Not an admin — redirect to homepage with error
-        const url = request.nextUrl.clone();
-        url.pathname = "/";
-        url.searchParams.set("error", "admin_required");
-        return NextResponse.redirect(url);
-      }
+    // Use the same user-scoped client (RLS allows reading own profile role).
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .maybeSingle<{ role: string }>();
+    const isAdmin = profile?.role === "admin" || profile?.role === "super_admin";
+    if (!isAdmin) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/";
+      url.searchParams.set("error", "admin_required");
+      return NextResponse.redirect(url);
     }
   }
 
