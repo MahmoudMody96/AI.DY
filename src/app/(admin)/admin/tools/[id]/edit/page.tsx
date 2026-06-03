@@ -3,6 +3,7 @@ import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { saveTool, deleteTool } from "../../actions";
 import { DeleteButton } from "../../../_components/delete-button";
+import { LogoUrlField } from "../../../_components/logo-url-field";
 
 const PRICING_TYPES = ["free", "freemium", "paid", "contact"] as const;
 
@@ -110,7 +111,14 @@ export default async function EditToolPage({
           </h2>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <Field label="Website URL" name="website_url" type="url" defaultValue={(tool?.website_url as string) ?? ""} />
-            <Field label="Logo URL" name="logo_url" type="url" defaultValue={(tool?.logo_url as string) ?? ""} />
+            <div>
+              <Label>Logo</Label>
+              <LogoUrlField
+                name="logo_url"
+                defaultValue={(tool?.logo_url as string) ?? ""}
+                hint="ارفع صورة الشعار مباشرة. PNG, JPG, WebP, SVG. حد أقصى 5 MB."
+              />
+            </div>
           </div>
         </div>
 
