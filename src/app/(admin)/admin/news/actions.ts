@@ -21,12 +21,11 @@ function slugify(input: string): string {
 }
 
 function readingTimeFromMarkdown(md: string): number {
-  // ~200 words per minute; treat each whitespace-separated token as a word
   const words = md.trim().split(/\s+/).filter(Boolean).length;
   return Math.max(1, Math.round(words / 200));
 }
 
-export async function savePost(formData: FormData) {
+export async function saveArticle(formData: FormData) {
   const admin = await assertAdmin();
   const id = formData.get("id") as string | null;
   const title = formData.get("title") as string;
@@ -78,12 +77,12 @@ export async function savePost(formData: FormData) {
   if (id) {
     const { error } = await admin.from("articles").update(payload).eq("id", id);
     if (error) throw new Error(error.message);
-    revalidatePath("/admin/posts");
-    revalidatePath(`/admin/posts/${id}/edit`);
-    revalidatePath("/blog");
-    revalidatePath(`/blog/${finalSlug}`);
+    revalidatePath("/admin/news");
+    revalidatePath(`/admin/news/${id}/edit`);
+    revalidatePath("/news");
+    revalidatePath(`/news/${finalSlug}`);
     revalidatePath("/sitemap.xml");
-    redirect(`/admin/posts/${id}/edit?saved=1`);
+    redirect(`/admin/news/${id}/edit?saved=1`);
   } else {
     const { data, error } = await admin
       .from("articles")
@@ -91,22 +90,22 @@ export async function savePost(formData: FormData) {
       .select("id")
       .single();
     if (error) throw new Error(error.message);
-    revalidatePath("/admin/posts");
-    if (data?.id) redirect(`/admin/posts/${data.id}/edit?saved=1`);
-    redirect("/admin/posts?saved=1");
+    revalidatePath("/admin/news");
+    if (data?.id) redirect(`/admin/news/${data.id}/edit?saved=1`);
+    redirect("/admin/news?saved=1");
   }
 }
 
-export async function deletePost(formData: FormData) {
+export async function deleteArticle(formData: FormData) {
   const admin = await assertAdmin();
   const id = formData.get("id") as string;
   const { error } = await admin.from("articles").delete().eq("id", id);
   if (error) throw new Error(error.message);
-  revalidatePath("/admin/posts");
-  redirect("/admin/posts?deleted=1");
+  revalidatePath("/admin/news");
+  redirect("/admin/news?deleted=1");
 }
 
-export async function publishPost(formData: FormData) {
+export async function publishArticle(formData: FormData) {
   const admin = await assertAdmin();
   const id = formData.get("id") as string;
   const { error } = await admin
@@ -118,9 +117,9 @@ export async function publishPost(formData: FormData) {
     })
     .eq("id", id);
   if (error) throw new Error(error.message);
-  revalidatePath("/admin/posts");
-  revalidatePath(`/admin/posts/${id}/edit`);
-  revalidatePath("/blog");
+  revalidatePath("/admin/news");
+  revalidatePath(`/admin/news/${id}/edit`);
+  revalidatePath("/news");
   revalidatePath("/sitemap.xml");
-  redirect(`/admin/posts/${id}/edit?published=1`);
+  redirect(`/admin/news/${id}/edit?published=1`);
 }

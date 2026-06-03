@@ -1,31 +1,40 @@
 // ============================================
 // AI.DY — Admin Content API
-// Endpoint for AI agents / automation to publish content
-// Auth: requires an API key passed in the X-API-Key header
-//       (or Authorization: Bearer <key>)
+// POST: create news article or user post (auth: API key OR admin user)
+// GET:  list recent items (auth: API key OR admin user)
+//
+// Auth methods (in order of preference):
+//   1. X-API-Key header (uses ADMIN_API_KEY env)
+//   2. Authorization: Bearer <key>
+//   3. Authenticated admin user session
 // ============================================
 
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { createClient } from "@/lib/supabase/server";
 
-const ArticleSchema = z.object({
-  type: z.enum(["blog_post", "comparison", "use_case"]).default("blog_post"),
+const ContentSchema = z.object({
+  // 'news' (default) publishes to `articles`; 'user_post' to `user_posts`
+  kind: z.enum(["news", "user_post"]).default("news"),
+
+  // Shared fields
   title: z.string().min(3).max(200),
   slug: z.string().min(3).max(120).regex(/^[a-z0-9-]+$/).optional(),
   excerpt: z.string().max(500).optional(),
   body: z.string().min(10),
   cover_url: z.string().url().optional(),
   category_slug: z.string().optional(),
-  target_tool_slugs: z.array(z.string()).default([]),
-  target_category_slugs: z.array(z.string()).default([]),
-  seo_keywords: z.array(z.string()).default([]),
   tags: z.array(z.string()).default([]),
-  status: z.enum(["draft", "scheduled", "published"]).default("draft"),
-  scheduled_at: z.string().datetime().optional(),
-  author_email: z.string().email().optional(),
+  status: z.enum(["draft", "published", "archived"]).default("draft"),
+
+  // News-only
   meta_title: z.string().max(200).optional(),
   meta_description: z.string().max(500).optional(),
+  is_featured: z.boolean().default(false),
+
+  // User post-only
+  author_email: z.string().email().optional(), // resolved to profile
 });
 
 function slugify(input: string): string {
@@ -43,30 +52,58 @@ function readingTime(md: string): number {
   return Math.max(1, Math.round(words / 200));
 }
 
-function authOk(req: NextRequest): boolean {
-  const expected = process.env.ADMIN_API_KEY;
-  if (!expected) {
-    if (process.env.NODE_ENV !== "production") {
-      console.warn("[api/admin/content] ADMIN_API_KEY not set — endpoint is open in dev");
-      return true;
-    }
-    return false;
-  }
-  const provided =
-    req.headers.get("x-api-key") ??
-    req.headers.get("authorization")?.replace(/^Bearer\s+/i, "");
-  if (!provided) return false;
-  if (provided.length !== expected.length) return false;
-  // Constant-time comparison
+function constantTimeEq(a: string, b: string): boolean {
+  if (a.length !== b.length) return false;
   let mismatch = 0;
-  for (let i = 0; i < provided.length; i++) {
-    mismatch |= provided.charCodeAt(i) ^ expected.charCodeAt(i);
+  for (let i = 0; i < a.length; i++) {
+    mismatch |= a.charCodeAt(i) ^ b.charCodeAt(i);
   }
   return mismatch === 0;
 }
 
+async function authenticate(req: NextRequest): Promise<
+  { kind: "api_key"; key: string } | { kind: "admin_user" } | null
+> {
+  // 1) Check API key
+  const expected = process.env.ADMIN_API_KEY;
+  const provided =
+    req.headers.get("x-api-key") ??
+    req.headers.get("authorization")?.replace(/^Bearer\s+/i, "");
+  if (provided && expected && constantTimeEq(provided, expected)) {
+    return { kind: "api_key", key: provided };
+  }
+  if (provided && !expected) {
+    if (process.env.NODE_ENV !== "production") {
+      console.warn("[api/admin/content] ADMIN_API_KEY not set — endpoint is open in dev");
+      return { kind: "api_key", key: provided };
+    }
+    return null;
+  }
+
+  // 2) Check admin user session
+  const supabase = await createClient();
+  if (!supabase) return null;
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return null;
+
+  // Check role
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .maybeSingle();
+  if (profile && (profile.role === "admin" || profile.role === "super_admin")) {
+    return { kind: "admin_user" };
+  }
+
+  return null;
+}
+
 export async function POST(req: NextRequest) {
-  if (!authOk(req)) {
+  const auth = await authenticate(req);
+  if (!auth) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -85,7 +122,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
   }
 
-  const parsed = ArticleSchema.safeParse(body);
+  const parsed = ContentSchema.safeParse(body);
   if (!parsed.success) {
     return NextResponse.json(
       { error: "Validation failed", issues: parsed.error.issues },
@@ -105,24 +142,14 @@ export async function POST(req: NextRequest) {
     categoryId = data?.id ?? null;
   }
 
-  // Resolve author
-  let authorId: string | null = null;
-  if (input.author_email) {
-    const { data } = await admin
-      .from("profiles")
-      .select("id")
-      .eq("email", input.author_email)
-      .maybeSingle();
-    authorId = data?.id ?? null;
-  }
-
   // Auto-slug + ensure unique
-  let baseSlug = input.slug ?? slugify(input.title);
+  const baseSlug = input.slug ?? slugify(input.title);
+  const table = input.kind === "news" ? "articles" : "user_posts";
   let finalSlug = baseSlug;
   let suffix = 1;
   while (true) {
     const { data } = await admin
-      .from("articles")
+      .from(table)
       .select("id")
       .eq("slug", finalSlug)
       .maybeSingle();
@@ -136,49 +163,82 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  const status =
-    input.status === "published" ? "published" : input.status === "scheduled" ? "draft" : "draft";
-  const publishedAt =
-    input.status === "published"
-      ? new Date().toISOString()
-      : input.scheduled_at ?? null;
-
-  // Build tag list: union of user tags + target tools + seo keywords
-  const tags = Array.from(
-    new Set([...input.tags, ...input.target_tool_slugs, ...input.seo_keywords])
-  );
-
-  const { data: article, error } = await admin
-    .from("articles")
-    .insert({
-      slug: finalSlug,
-      title: input.title,
-      excerpt: input.excerpt ?? null,
-      content_mdx: input.body,
-      cover_url: input.cover_url ?? null,
-      author_id: authorId,
-      category_id: categoryId,
-      tags,
-      reading_time: readingTime(input.body),
-      status,
-      published_at: publishedAt,
-      meta_title: input.meta_title ?? null,
-      meta_description: input.meta_description ?? null,
-    })
-    .select("id, slug, status, published_at")
-    .single();
-
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  let result;
+  if (input.kind === "news") {
+    const publishedAt =
+      input.status === "published" ? new Date().toISOString() : null;
+    const { data, error } = await admin
+      .from("articles")
+      .insert({
+        slug: finalSlug,
+        title: input.title,
+        excerpt: input.excerpt ?? null,
+        content_mdx: input.body,
+        cover_url: input.cover_url ?? null,
+        category_id: categoryId,
+        tags: input.tags,
+        reading_time: readingTime(input.body),
+        status: input.status,
+        is_featured: input.is_featured,
+        published_at: publishedAt,
+        meta_title: input.meta_title ?? null,
+        meta_description: input.meta_description ?? null,
+      })
+      .select("id, slug, status, published_at")
+      .single();
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    result = { item: data, table: "articles" };
+  } else {
+    // user_post — resolve author
+    let authorId: string | null = null;
+    if (input.author_email) {
+      const { data } = await admin
+        .from("profiles")
+        .select("id")
+        .eq("email", input.author_email)
+        .maybeSingle();
+      authorId = data?.id ?? null;
+    }
+    if (!authorId) {
+      return NextResponse.json(
+        {
+          error:
+            "user_post requires author_email (or implement session-based author resolution)",
+        },
+        { status: 400 }
+      );
+    }
+    const { data, error } = await admin
+      .from("user_posts")
+      .insert({
+        slug: finalSlug,
+        title: input.title,
+        excerpt: input.excerpt ?? null,
+        body: input.body,
+        cover_url: input.cover_url ?? null,
+        author_id: authorId,
+        category_id: categoryId,
+        tags: input.tags,
+        reading_time: readingTime(input.body),
+        status: input.status,
+      })
+      .select("id, slug, status, published_at")
+      .single();
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    result = { item: data, table: "user_posts" };
   }
 
   return NextResponse.json(
     {
       ok: true,
-      article,
+      ...result,
       links: {
-        public: `/blog/${article.slug}`,
-        admin: `/admin/posts/${article.id}/edit`,
+        public:
+          input.kind === "news" ? `/news/${result.item.slug}` : `/blog/${result.item.slug}`,
+        admin:
+          input.kind === "news"
+            ? `/admin/news/${result.item.id}/edit`
+            : `/admin/user-posts`,
       },
     },
     { status: 201 }
@@ -186,20 +246,38 @@ export async function POST(req: NextRequest) {
 }
 
 export async function GET(req: NextRequest) {
-  if (!authOk(req)) {
+  const auth = await authenticate(req);
+  if (!auth) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+
   const admin = createAdminClient();
   if (!admin) {
     return NextResponse.json({ error: "Service unavailable" }, { status: 503 });
   }
-  const { data, error } = await admin
-    .from("articles")
-    .select("id, slug, title, status, published_at, created_at, updated_at")
-    .order("created_at", { ascending: false })
-    .limit(50);
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+
+  const url = new URL(req.url);
+  const kind = (url.searchParams.get("kind") ?? "all") as "news" | "user_post" | "all";
+  const limit = Math.min(Number(url.searchParams.get("limit") ?? 50), 200);
+
+  const out: Record<string, unknown[]> = { articles: [], user_posts: [] };
+
+  if (kind === "news" || kind === "all") {
+    const { data } = await admin
+      .from("articles")
+      .select("id, slug, title, status, published_at, created_at, updated_at")
+      .order("created_at", { ascending: false })
+      .limit(limit);
+    out.articles = data ?? [];
   }
-  return NextResponse.json({ articles: data });
+  if (kind === "user_post" || kind === "all") {
+    const { data } = await admin
+      .from("user_posts")
+      .select("id, slug, title, status, author_id, published_at, created_at, updated_at")
+      .order("created_at", { ascending: false })
+      .limit(limit);
+    out.user_posts = data ?? [];
+  }
+
+  return NextResponse.json(out);
 }

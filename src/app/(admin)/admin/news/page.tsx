@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
-import { Plus, FileText, CheckCircle2, Clock, Archive } from "lucide-react";
+import { Plus, Newspaper, CheckCircle2, Clock, Archive } from "lucide-react";
 
 function relativeTime(iso: string | null | undefined): string {
   if (!iso) return "—";
@@ -16,7 +16,7 @@ function relativeTime(iso: string | null | undefined): string {
   return d.toLocaleDateString();
 }
 
-export default async function AdminPostsPage() {
+export default async function AdminNewsPage() {
   const admin = await createClient();
   if (!admin) return <div className="text-zinc-500">Admin client unavailable</div>;
 
@@ -39,17 +39,17 @@ export default async function AdminPostsPage() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Blog Posts</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">News</h1>
           <p className="text-sm text-zinc-500">
             {list.length} total · {counts.published ?? 0} published · {counts.draft ?? 0} drafts
           </p>
         </div>
         <Link
-          href="/admin/posts/new/edit"
+          href="/admin/news/new/edit"
           className="inline-flex items-center gap-1.5 rounded-md bg-violet-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-violet-700"
         >
           <Plus className="h-4 w-4" />
-          New post
+          New article
         </Link>
       </div>
 
@@ -68,10 +68,10 @@ export default async function AdminPostsPage() {
             {list.length === 0 && (
               <tr>
                 <td colSpan={5} className="px-4 py-12 text-center text-zinc-500">
-                  <FileText className="mx-auto mb-2 h-8 w-8 text-zinc-300" />
-                  No posts yet.{" "}
+                  <Newspaper className="mx-auto mb-2 h-8 w-8 text-zinc-300" />
+                  No articles yet.{" "}
                   <Link
-                    href="/admin/posts/new/edit"
+                    href="/admin/news/new/edit"
                     className="text-violet-600 hover:underline"
                   >
                     Write the first one
@@ -83,12 +83,12 @@ export default async function AdminPostsPage() {
               <tr key={p.id} className="hover:bg-zinc-50/50 dark:hover:bg-zinc-800/30">
                 <td className="px-4 py-2.5">
                   <Link
-                    href={`/admin/posts/${p.id}/edit`}
+                    href={`/admin/news/${p.id}/edit`}
                     className="font-medium text-violet-700 hover:underline dark:text-violet-400"
                   >
                     {p.title}
                   </Link>
-                  <div className="text-xs text-zinc-400">/blog/{p.slug}</div>
+                  <div className="text-xs text-zinc-400">/news/{p.slug}</div>
                 </td>
                 <td className="px-4 py-2.5">
                   {p.status === "published" ? (

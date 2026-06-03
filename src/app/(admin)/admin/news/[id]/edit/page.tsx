@@ -1,11 +1,11 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { savePost, deletePost, publishPost } from "../../actions";
+import { saveArticle, deleteArticle, publishArticle } from "../../actions";
 import { Input, Label } from "../../../_components/form-helpers";
 import { DeleteButton } from "../../../_components/delete-button";
 
-export default async function EditPostPage({
+export default async function EditArticlePage({
   params,
   searchParams,
 }: {
@@ -15,7 +15,7 @@ export default async function EditPostPage({
   const { id } = await params;
   const { saved, published } = await searchParams;
   const admin = await createClient();
-  if (!admin) redirect("/admin/posts");
+  if (!admin) redirect("/admin/news");
 
   const isNew = id === "new";
   let post: Record<string, unknown> | null = null;
@@ -34,11 +34,11 @@ export default async function EditPostPage({
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <Link href="/admin/posts" className="text-xs text-zinc-500 hover:text-zinc-700">
-            ← Posts
+          <Link href="/admin/news" className="text-xs text-zinc-500 hover:text-zinc-700">
+            ← News
           </Link>
           <h1 className="mt-1 text-2xl font-semibold tracking-tight">
-            {isNew ? "New post" : `Edit: ${(post?.title as string) ?? ""}`}
+            {isNew ? "New article" : `Edit: ${(post?.title as string) ?? ""}`}
           </h1>
         </div>
         <div className="flex items-center gap-2">
@@ -55,7 +55,7 @@ export default async function EditPostPage({
         </div>
       </div>
 
-      <form action={savePost} className="space-y-6">
+      <form action={saveArticle} className="space-y-6">
         {post && post.id ? <input type="hidden" name="id" value={String(post.id)} /> : null}
 
         <div className="rounded-lg border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
@@ -89,7 +89,7 @@ export default async function EditPostPage({
                 rows={20}
                 defaultValue={(post?.content_mdx as string) ?? ""}
                 className="w-full rounded-md border border-zinc-200 bg-white px-3 py-1.5 font-mono text-xs dark:border-zinc-800 dark:bg-zinc-900"
-                placeholder="# Title&#10;&#10;Write your post in **markdown**..."
+                placeholder="# Title&#10;&#10;Write your article in **markdown**..."
               />
               <p className="mt-1 text-xs text-zinc-500">
                 MDX is rendered server-side at build time. Standard markdown + React components.
@@ -178,7 +178,7 @@ export default async function EditPostPage({
               />
               <div>
                 <div className="text-sm font-medium">Featured</div>
-                <div className="text-xs text-zinc-500">Highlight on the blog index</div>
+                <div className="text-xs text-zinc-500">Highlight on the news index</div>
               </div>
             </label>
           </div>
@@ -192,19 +192,19 @@ export default async function EditPostPage({
             {!isNew && (post?.status as string) !== "published" && (
               <button
                 type="submit"
-                formAction={publishPost}
+                formAction={publishArticle}
                 className="rounded-md border border-violet-200 bg-white px-4 py-2 text-sm font-medium text-violet-700 hover:bg-violet-50 dark:border-violet-900 dark:bg-zinc-900 dark:text-violet-300 dark:hover:bg-violet-950/30"
               >
                 Save & Publish
               </button>
             )}
-            <Link href="/admin/posts" className="rounded-md border border-zinc-200 bg-white px-4 py-2 text-sm font-medium hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900 dark:hover:bg-zinc-800">
+            <Link href="/admin/news" className="rounded-md border border-zinc-200 bg-white px-4 py-2 text-sm font-medium hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900 dark:hover:bg-zinc-800">
               Cancel
             </Link>
           </div>
           {!isNew && (
-            <DeleteButton formAction={deletePost} message="Delete this post? This cannot be undone.">
-              Delete post
+            <DeleteButton formAction={deleteArticle} message="Delete this article? This cannot be undone.">
+              Delete article
             </DeleteButton>
           )}
         </div>
