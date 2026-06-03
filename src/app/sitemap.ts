@@ -43,7 +43,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   try {
     const supabase = await createClient();
     if (supabase) {
-      const [{ data: tools }, { data: categories }] = await Promise.all([
+      const [{ data: tools }, { data: categories }, { data: articles }] = await Promise.all([
         supabase
           .from("tools")
           .select("slug, updated_at")
@@ -53,6 +53,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
           .from("categories")
           .select("slug, updated_at")
           .eq("is_active", true),
+        supabase
+          .from("articles")
+          .select("slug, updated_at, published_at")
+          .eq("status", "published"),
       ]);
 
       dynamicEntries = [
@@ -67,6 +71,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
           lastModified: c.updated_at ? new Date(c.updated_at) : now,
           changeFrequency: "weekly" as const,
           priority: 0.7,
+        })),
+        ...(articles ?? []).map((a) => ({
+          url: `${baseUrl}/blog/${a.slug}`,
+          lastModified: a.published_at ? new Date(a.published_at) : a.updated_at ? new Date(a.updated_at) : now,
+          changeFrequency: "monthly" as const,
+          priority: 0.6,
         })),
       ];
     }

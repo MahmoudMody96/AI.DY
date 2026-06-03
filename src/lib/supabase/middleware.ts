@@ -1,5 +1,6 @@
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { type NextRequest, NextResponse } from "next/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 const PUBLIC_ROUTES = [
   "/",
@@ -9,14 +10,32 @@ const PUBLIC_ROUTES = [
   "/signup",
   "/forgot-password",
   "/auth",
-  "/api",
 ];
 
-const PROTECTED_ROUTES = ["/account", "/admin", "/submit"];
+const API_PUBLIC_ROUTES = [
+  "/api/categories",
+  "/api/tools",
+  "/api/admin/content", // authenticated via API key, not session
+  "/api/newsletter",
+  "/api/leads",
+  "/api/views",
+];
+
+const PROTECTED_ROUTES = ["/account", "/submit"];
+
+const ADMIN_ROUTES = ["/admin"];
 
 function isPublic(pathname: string): boolean {
+  if (ADMIN_ROUTES.some((p) => pathname.startsWith(p))) return false;
   if (PROTECTED_ROUTES.some((p) => pathname.startsWith(p))) return false;
+  if (pathname.startsWith("/api/")) {
+    return API_PUBLIC_ROUTES.some((p) => pathname.startsWith(p));
+  }
   return PUBLIC_ROUTES.some((p) => pathname === p || pathname.startsWith(`${p}/`));
+}
+
+function isAdminRoute(pathname: string): boolean {
+  return ADMIN_ROUTES.some((p) => pathname === p || pathname.startsWith(`${p}/`));
 }
 
 export async function updateSession(request: NextRequest) {
@@ -44,9 +63,29 @@ export async function updateSession(request: NextRequest) {
   });
 
   // Refresh session if needed
-  await supabase.auth.getUser();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  // Enforce admin role for /admin/* routes
+  if (user && isAdminRoute(request.nextUrl.pathname)) {
+    const admin = createAdminClient();
+    if (admin) {
+      const { data: profile } = await admin
+        .from("profiles")
+        .select("role")
+        .eq("id", user.id)
+        .maybeSingle();
+      const isAdmin = profile?.role === "admin" || profile?.role === "super_admin";
+      if (!isAdmin) {
+        // Not an admin — redirect to homepage with error
+        const url = request.nextUrl.clone();
+        url.pathname = "/";
+        url.searchParams.set("error", "admin_required");
+        return NextResponse.redirect(url);
+      }
+    }
+  }
 
   return response;
 }
 
-export { isPublic };
+export { isPublic, isAdminRoute };
