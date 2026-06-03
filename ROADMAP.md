@@ -5,7 +5,7 @@
 > **Live:** https://ai-dy-git-main-mahmouds-projects-97f3fe54.vercel.app
 > **Stack:** Next.js 16 + Tailwind 4 + Supabase (Postgres + Auth + RLS) + TypeScript
 > **Branch:** `main` (auto-deploy على Vercel)
-> **آخر commit:** `60629ce` — fix(css): make dark: variant class-based to match next-themes
+> **آخر commit:** `d16f50b` — fix(admin): add News to nav + redirect old /blog slugs + fix client-component onClick
 
 ---
 
@@ -24,11 +24,12 @@
 | SEO: sitemap.xml + robots.txt + canonical URLs | ✅ Phase 1.0 — see below |
 | Component library (shadcn-style) | ⚠️ mixed with inline JSX — extract in Phase 1.2 |
 | Auth flow (login/signup/forgot, server actions) | ⚠️ pages + actions موجودة، users live بعد Phase 1.1 |
+| User-generated content (`/blog`, user_posts, comments, likes) | ✅ live (UGC domain migrated, /blog و /blog/[slug] شغالين) |
 | Reviews / ratings | ❌ مش موجودة — Phase 1.3 |
 | Live demos | ❌ مش موجودة — Phase 2.0 |
 | Monetization (affiliate / sponsored / newsletter) | ❌ مش موجودة — Phase 4.0 |
-| Admin dashboard (CMS) | ❌ مش موجودة — Phase 1.5 |
-| Blog content | ❌ placeholder — Phase 1.5 (via admin dashboard) |
+| Admin dashboard (CMS) | ⚠️ `/admin` مبني + Content Engine API شغال (Phase 1.5 in progress) |
+| Blog content | ⚠️ user posts route live، editorial news live على /news |
 
 ---
 
@@ -487,7 +488,7 @@ export async function SiteHeader() {
 1. **Tool detail page — `views_count` increment:** نعمله في Server Action (كل page load) ولا بـ trigger DB على الـ SELECT؟ الـ trigger أنضف بس أعقد.
 2. **Phase 0.7 — shadcn style:** New York (أنضف) vs Default (أسهل). افتراضياً: **New York**.
 3. **Phase 0.8 — Google OAuth:** هل عندك Google Cloud Console access؟ لو لأ، نعمل Email-only للبداية ونضيف Google بعدين.
-4. **DB password leaked:** الـ `Kemo_prompt@2026` لسه في git history. Supabase Dashboard → Settings → Database → Reset password. (اللي بيتطلب منك، مش أنا.)
+4. **DB password rotation (مهم):** الباسورد القديم اتكتب في الـ commit history. محتاج rotation من Supabase Dashboard → Settings → Database → Reset. (اللي بيتطلب منك، مش أنا. ومهم — مفيش بديل تاني.)
 
 ---
 
