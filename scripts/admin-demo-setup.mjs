@@ -52,13 +52,15 @@ const TEST_NAME = 'Admin Demo';
     console.log('  ✓ user already exists', user.id);
   }
 
-  console.log('2. Promoting to super_admin…');
-  const { error: updateErr } = await admin
+  console.log('2. Upserting profile row to super_admin…');
+  const { error: upsertErr } = await admin
     .from('profiles')
-    .update({ role: 'super_admin', display_name: TEST_NAME, email: TEST_EMAIL })
-    .eq('id', user.id);
-  if (updateErr) {
-    console.error('  role update failed:', updateErr.message);
+    .upsert(
+      { id: user.id, role: 'super_admin', display_name: TEST_NAME, email: TEST_EMAIL },
+      { onConflict: 'id' }
+    );
+  if (upsertErr) {
+    console.error('  profile upsert failed:', upsertErr.message);
     process.exit(1);
   }
   console.log('  ✓ role = super_admin');
