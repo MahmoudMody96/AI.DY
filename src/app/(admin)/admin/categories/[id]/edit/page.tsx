@@ -3,6 +3,7 @@ import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { saveCategory, deleteCategory } from "../../actions";
 import { Input, Label } from "../../../_components/form-helpers";
+import { DeleteButton } from "../../../_components/delete-button";
 
 export default async function EditCategoryPage({
   params,
@@ -111,13 +112,9 @@ export default async function EditCategoryPage({
             </Link>
           </div>
           {!isNew && (
-            <button
-              type="submit"
-              formAction={deleteCategory}
-              className="text-xs text-red-600 hover:text-red-700"
-            >
+            <DeleteButton formAction={deleteCategory} message="Delete this category? This cannot be undone.">
               Delete category
-            </button>
+            </DeleteButton>
           )}
         </div>
       </form>

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { saveTool, deleteTool } from "../../actions";
+import { DeleteButton } from "../../../_components/delete-button";
 
 const PRICING_TYPES = ["free", "freemium", "paid", "contact"] as const;
 
@@ -199,18 +200,9 @@ export default async function EditToolPage({
             </Link>
           </div>
           {!isNew && (
-            <button
-              type="submit"
-              formAction={deleteTool}
-              className="text-xs text-red-600 hover:text-red-700"
-              onClick={(e) => {
-                if (!confirm("Delete this tool? This cannot be undone.")) {
-                  e.preventDefault();
-                }
-              }}
-            >
+            <DeleteButton formAction={deleteTool} message="Delete this tool? This cannot be undone.">
               Delete tool
-            </button>
+            </DeleteButton>
           )}
         </div>
       </form>

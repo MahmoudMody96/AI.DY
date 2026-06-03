@@ -3,6 +3,7 @@ import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { savePost, deletePost, publishPost } from "../../actions";
 import { Input, Label } from "../../../_components/form-helpers";
+import { DeleteButton } from "../../../_components/delete-button";
 
 export default async function EditPostPage({
   params,
@@ -202,13 +203,9 @@ export default async function EditPostPage({
             </Link>
           </div>
           {!isNew && (
-            <button
-              type="submit"
-              formAction={deletePost}
-              className="text-xs text-red-600 hover:text-red-700"
-            >
+            <DeleteButton formAction={deletePost} message="Delete this post? This cannot be undone.">
               Delete post
-            </button>
+            </DeleteButton>
           )}
         </div>
       </form>
