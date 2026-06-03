@@ -1,6 +1,6 @@
-// Migration: create a public "media" bucket for tool logos,
-// blog covers, and any other user-uploaded assets. Admins
-// can upload, anyone can read.
+-- Migration: create a public "media" bucket for tool logos,
+-- blog covers, and any other user-uploaded assets. Admins
+-- can upload, anyone can read.
 
 INSERT INTO storage.buckets (id, name, public)
 VALUES ('media', 'media', true)
