@@ -37,6 +37,9 @@ export async function SiteHeader() {
           <Link href="/categories" className="text-sm font-medium text-zinc-700 hover:text-violet-600 dark:text-zinc-300">
             الفئات
           </Link>
+          <Link href="/news" className="text-sm font-medium text-zinc-700 hover:text-violet-600 dark:text-zinc-300">
+            الأخبار
+          </Link>
           <Link href="/blog" className="text-sm font-medium text-zinc-700 hover:text-violet-600 dark:text-zinc-300">
             المدونة
           </Link>

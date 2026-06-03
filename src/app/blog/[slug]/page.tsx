@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import {
   Calendar,
   Clock,
@@ -116,7 +116,21 @@ export default async function BlogPostPage({
     .eq("slug", slug)
     .eq("status", "published")
     .maybeSingle<UserPost>();
-  if (error || !post) notFound();
+
+  // Backwards compatibility: if no user_post matches, the slug might be
+  // an old editorial article. Redirect to /news/[slug] for the new home.
+  if (!post) {
+    const { data: article } = await supabase
+      .from("articles")
+      .select("id")
+      .eq("slug", slug)
+      .eq("status", "published")
+      .maybeSingle<{ id: string }>();
+    if (article) {
+      redirect(`/news/${slug}`);
+    }
+    notFound();
+  }
 
   // Get the author
   let author: Author | null = null;

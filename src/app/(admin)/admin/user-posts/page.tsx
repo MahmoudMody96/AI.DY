@@ -2,6 +2,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { CheckCircle2, Flag, Archive, X, Eye, Heart, MessageCircle, Trash2 } from "lucide-react";
 import { setUserPostStatus, deleteUserPost } from "./actions";
+import { ConfirmFormSubmit } from "../_components/confirm-form-submit";
 
 function relativeTime(iso: string | null | undefined): string {
   if (!iso) return "—";
@@ -186,18 +187,14 @@ export default async function AdminUserPostsPage() {
                           </button>
                         </form>
                       )}
-                      <form action={deleteUserPost}>
-                        <input type="hidden" name="id" value={p.id} />
-                        <button
-                          type="submit"
-                          className="inline-flex items-center gap-1 rounded border border-rose-200 bg-white px-2 py-1 text-xs font-medium text-rose-600 hover:bg-rose-50 dark:border-rose-900 dark:bg-zinc-900 dark:text-rose-400 dark:hover:bg-rose-950/30"
-                          onClick={(e) => {
-                            if (!confirm("Delete this post permanently?")) e.preventDefault();
-                          }}
-                        >
-                          <Trash2 className="h-3 w-3" />
-                        </button>
-                      </form>
+                      <ConfirmFormSubmit
+                        formAction={deleteUserPost}
+                        id={p.id}
+                        message="Delete this post permanently?"
+                        className="inline-flex items-center gap-1 rounded border border-rose-200 bg-white px-2 py-1 text-xs font-medium text-rose-600 hover:bg-rose-50 dark:border-rose-900 dark:bg-zinc-900 dark:text-rose-400 dark:hover:bg-rose-950/30"
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </ConfirmFormSubmit>
                     </div>
                   </td>
                 </tr>
