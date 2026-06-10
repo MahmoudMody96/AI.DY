@@ -845,6 +845,42 @@ export type Database = {
         };
         Relationships: [];
       };
+      sponsored_slots: {
+        Row: {
+          id: string;
+          position: string;
+          tool_id: string;
+          starts_at: string;
+          ends_at: string;
+          status: string;
+          note: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          position: string;
+          tool_id: string;
+          starts_at?: string;
+          ends_at: string;
+          status?: string;
+          note?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          position?: string;
+          tool_id?: string;
+          starts_at?: string;
+          ends_at?: string;
+          status?: string;
+          note?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
       subscriptions: {
         Row: {
           id: string;
@@ -986,6 +1022,7 @@ export type Database = {
           search_vector: unknown | null;
           demo_type: string | null;
           demo_config: Json;
+          affiliate_url: string | null;
         };
         Insert: {
           id?: string;
@@ -1037,6 +1074,7 @@ export type Database = {
           search_vector?: unknown | null;
           demo_type?: string | null;
           demo_config?: Json;
+          affiliate_url?: string | null;
         };
         Update: {
           id?: string;
@@ -1088,6 +1126,7 @@ export type Database = {
           search_vector?: unknown | null;
           demo_type?: string | null;
           demo_config?: Json;
+          affiliate_url?: string | null;
         };
         Relationships: [];
       };
