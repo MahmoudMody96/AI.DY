@@ -8,6 +8,7 @@ import { Container } from "@/components/layout/container";
 import { Breadcrumb } from "@/components/ui/breadcrumb";
 import { RatingStars } from "@/components/ui/rating-stars";
 import { EmptyState } from "@/components/ui/empty-state";
+import { LeadGenCta } from "@/components/marketing/lead-gen-cta";
 import type { Metadata } from "next";
 
 const ICON_EMOJI: Record<string, string> = {
@@ -25,11 +26,7 @@ const ICON_EMOJI: Record<string, string> = {
   Megaphone: "📣",
 };
 
-// Mahmoud's WhatsApp link (wa.me) — used for the "عايز تطبيق زي AI.DY" CTA
-const MAHMOUD_WHATSAPP = "https://wa.me/201234567890?text=" +
-  encodeURIComponent(
-    "مرحبًا محمود — عايز تطبيق زي AI.DY لمشروعي."
-  );
+// Mahmoud's WhatsApp link is now centralized in LeadGenCta component.
 
 type Params = { slug: string };
 
@@ -314,29 +311,9 @@ export default async function UseCaseDetailPage({
               )}
             </div>
 
-            {/* Sidebar CTA */}
+            {/* Sidebar CTA (Phase 4.0 LeadGenCta) */}
             <aside className="lg:sticky lg:top-6 lg:self-start">
-              <div className="overflow-hidden rounded-2xl border border-border bg-gradient-to-br from-violet-500/10 via-violet-500/5 to-transparent p-6">
-                <div className="mb-3 inline-flex h-9 w-9 items-center justify-center rounded-xl bg-violet-500/20 text-violet-700 dark:text-violet-300">
-                  <Sparkles className="h-5 w-5" />
-                </div>
-                <h3 className="text-base font-black leading-tight">
-                  عايز تطبيق زي AI.DY لمشروعك؟
-                </h3>
-                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                  بنبني منصات Demo-First لشركات ومتاجر. تواصل معانا وهنرجع
-                  لك خلال 24 ساعة.
-                </p>
-                <a
-                  href={MAHMOUD_WHATSAPP}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="mt-5 inline-flex h-11 w-full items-center justify-center gap-2 rounded-full bg-violet-600 px-5 text-sm font-semibold text-white shadow-lg shadow-violet-500/30 transition hover:bg-violet-700"
-                >
-                  <MessageCircle className="h-4 w-4" />
-                  تواصل عبر واتساب
-                </a>
-              </div>
+              <LeadGenCta variant="compact" source={`use-case:${useCaseData.slug}`} />
             </aside>
           </div>
         </Container>
@@ -416,27 +393,10 @@ export default async function UseCaseDetailPage({
         </Container>
       </section>
 
-      {/* Bottom CTA */}
+      {/* Bottom CTA (Phase 4.0 LeadGenCta) */}
       <section className="border-t border-border">
         <Container className="py-12">
-          <div className="overflow-hidden rounded-3xl border border-violet-500/30 bg-gradient-to-br from-violet-500/15 via-violet-500/5 to-cyan-500/10 p-8 text-center sm:p-12">
-            <h2 className="text-2xl font-black tracking-tight sm:text-3xl">
-              عايز تطبيق زي AI.DY؟
-            </h2>
-            <p className="mx-auto mt-3 max-w-xl text-base text-muted-foreground">
-              بنبني منصات Demo-First لشركات ومتاجر في أسبوعين — مع لوحة
-              إدارة، صفحة أدوات، تقييمات، ودعم عربي كامل.
-            </p>
-            <a
-              href={MAHMOUD_WHATSAPP}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="mt-6 inline-flex h-12 items-center justify-center gap-2 rounded-full bg-violet-600 px-8 text-base font-semibold text-white shadow-lg shadow-violet-500/30 transition hover:bg-violet-700"
-            >
-              <MessageCircle className="h-4 w-4" />
-              تواصل معانا على واتساب
-            </a>
-          </div>
+          <LeadGenCta variant="default" source={`use-case:${useCaseData.slug}`} />
         </Container>
       </section>
     </article>
