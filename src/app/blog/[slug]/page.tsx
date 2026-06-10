@@ -203,7 +203,36 @@ export default async function BlogPostPage({
     .maybeSingle<BlogPost>();
 
   if (blogPost) {
-    return <BlogPostView post={blogPost} />;
+    // Pre-fetch related data BEFORE rendering, so we can pass plain props
+    // to a synchronous render function (RSC doesn't allow <AsyncComponent/>
+    // syntax — must use await Promise.resolve(...) or inline).
+    let author: { display_name: string | null; avatar_url: string | null; bio: string | null } | null = null;
+    if (blogPost.author_id) {
+      try {
+        const { data } = await supabase
+          .from("profiles")
+          .select("display_name, avatar_url, bio")
+          .eq("id", blogPost.author_id)
+          .maybeSingle();
+        author = data ?? null;
+      } catch {}
+    }
+    let toolMap: Record<string, { name: string; slug: string }> = {};
+    if (blogPost.target_tools && blogPost.target_tools.length > 0) {
+      try {
+        const { data } = await supabase
+          .from("tools")
+          .select("slug, name")
+          .in("slug", blogPost.target_tools);
+        toolMap = Object.fromEntries(
+          ((data as { slug: string; name: string }[] | null) ?? []).map((t) => [
+            t.slug,
+            { name: t.name, slug: t.slug },
+          ])
+        );
+      } catch {}
+    }
+    return <BlogPostView post={blogPost} author={author} toolMap={toolMap} />;
   }
 
   // 2) Try user_posts (UGC) — original flow preserved
@@ -475,43 +504,22 @@ export default async function BlogPostPage({
 
 // ============================================
 // BlogPostView — renders blog_posts (Content Engine)
-// Renders body_html (server-rendered) when available, falls back to
-// client-side ReactMarkdown over body_markdown.
+// Synchronous (RSC rule: can't use <AsyncComponent/> in JSX — data
+// must be pre-fetched in the parent and passed as plain props).
 // ============================================
-async function BlogPostView({ post }: { post: BlogPost }) {
-  const supabase = await createClient();
+function BlogPostView({
+  post,
+  author,
+  toolMap,
+}: {
+  post: BlogPost;
+  author: { display_name: string | null; avatar_url: string | null; bio: string | null } | null;
+  toolMap: Record<string, { name: string; slug: string }>;
+}) {
   const siteUrl = getSiteUrl();
   const postUrl = `${siteUrl}/blog/${post.slug}`;
   const typeMeta = TYPE_META[post.type] ?? TYPE_META.blog_post;
   const TypeIcon = typeMeta.icon;
-
-  let author: { display_name: string | null; avatar_url: string | null; bio: string | null } | null = null;
-  if (post.author_id && supabase) {
-    try {
-      const { data } = await supabase
-        .from("profiles")
-        .select("display_name, avatar_url, bio")
-        .eq("id", post.author_id)
-        .maybeSingle();
-      author = data ?? null;
-    } catch {}
-  }
-
-  let toolMap: Record<string, { name: string; slug: string }> = {};
-  if (post.target_tools && post.target_tools.length > 0 && supabase) {
-    try {
-      const { data } = await supabase
-        .from("tools")
-        .select("slug, name")
-        .in("slug", post.target_tools);
-      toolMap = Object.fromEntries(
-        ((data as { slug: string; name: string }[] | null) ?? []).map((t) => [
-          t.slug,
-          { name: t.name, slug: t.slug },
-        ])
-      );
-    } catch {}
-  }
 
   // JSON-LD Article schema
   const jsonLd = {
