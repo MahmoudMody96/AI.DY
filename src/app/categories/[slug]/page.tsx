@@ -5,6 +5,7 @@ import { ToolGrid } from "../../tools/tool-grid";
 import { Container } from "@/components/layout/container";
 import { Breadcrumb } from "@/components/ui/breadcrumb";
 import { EmptyState } from "@/components/ui/empty-state";
+import { SponsoredSlot } from "@/components/marketing/sponsored-slot";
 import type { Metadata } from "next";
 
 const CATEGORY_ICONS: Record<string, string> = {
@@ -164,6 +165,12 @@ export default async function CategoryPage({
       {/* Tools grid */}
       <section className="py-12">
         <Container>
+          {/* Sponsored slot (top of category page) */}
+          <SponsoredSlot
+            position="category_top"
+            categoryId={category.id}
+            className="mb-8"
+          />
           {tools.length === 0 ? (
             <EmptyState
               title="لا توجد أدوات في هذه الفئة بعد"

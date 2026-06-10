@@ -7,6 +7,8 @@ import { Container } from "@/components/layout/container";
 import { ToolGrid } from "@/components/tools/tool-grid";
 import { CategoryGrid } from "@/components/categories/category-grid";
 import { EmptyState } from "@/components/ui/empty-state";
+import { SponsoredSlot } from "@/components/marketing/sponsored-slot";
+import { LeadGenCta } from "@/components/marketing/lead-gen-cta";
 
 type Category = {
   id: string;
@@ -230,6 +232,9 @@ export default async function Home() {
       {/* ===== Categories ===== */}
       <section className="py-20">
         <Container>
+          <SponsoredSlot position="homepage_hero" className="mb-10" />
+        </Container>
+        <Container>
           <div className="mb-10 flex items-end justify-between gap-4">
             <div>
               <p className="mb-2 text-xs font-semibold uppercase tracking-[0.18em] text-primary">
@@ -398,6 +403,13 @@ export default async function Home() {
               </Link>
             </div>
           </div>
+        </Container>
+      </section>
+
+      {/* ===== LeadGenCta (Phase 4.0) ===== */}
+      <section className="border-t border-border pb-20">
+        <Container>
+          <LeadGenCta variant="default" source="homepage" />
         </Container>
       </section>
     </div>

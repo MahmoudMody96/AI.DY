@@ -13,6 +13,7 @@ import {
   MessageCircle,
   KeyRound,
   Settings,
+  Megaphone,
   ExternalLink,
   type LucideIcon,
 } from "lucide-react";
@@ -29,6 +30,7 @@ type NavItem = {
 const NAV: NavItem[] = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
   { href: "/admin/tools", label: "Tools", icon: Wrench },
+  { href: "/admin/sponsored", label: "Sponsored", icon: Megaphone },
   { href: "/admin/categories", label: "Categories", icon: FolderTree },
   { href: "/admin/news", label: "News", icon: Newspaper },
   { href: "/admin/user-posts", label: "User Posts", icon: FileText },

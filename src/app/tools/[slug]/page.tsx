@@ -10,6 +10,9 @@ import { RatingStars } from "@/components/ui/rating-stars";
 import { PricingBadge } from "@/components/ui/pricing-badge";
 import { PricingLabel } from "@/components/ui/pricing-label";
 import { DemoRenderer } from "@/components/demos/demo-renderer";
+import { SponsoredSlot } from "@/components/marketing/sponsored-slot";
+import { LeadGenCta } from "@/components/marketing/lead-gen-cta";
+import { Gift, ExternalLink } from "lucide-react";
 import type { Metadata } from "next";
 
 const CATEGORY_ICONS_UNUSED = {
@@ -99,7 +102,7 @@ export default async function ToolDetailPage({
   const toolQuery = supabase
     .from("tools")
     .select(
-      `id, slug, name, name_en, tagline, description, website_url, logo_url,
+      `id, slug, name, name_en, tagline, description, website_url, affiliate_url, logo_url,
       pricing_type, starting_price, monthly_price, rating_avg, rating_count,
       views_count, is_featured, tags, created_at, updated_at,
       demo_type, demo_config,
@@ -252,16 +255,32 @@ export default async function ToolDetailPage({
               </div>
 
               {/* CTA */}
-              {tool.website_url && (
+              {(tool.website_url || tool.affiliate_url) && (
                 <div className="mt-6 flex flex-wrap gap-3">
-                  <a
-                    href={tool.website_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex h-12 items-center justify-center rounded-full bg-violet-600 px-8 text-base font-semibold text-white shadow-lg shadow-violet-500/30 transition hover:bg-violet-700"
-                  >
-                    زيارة الموقع الرسمي ↗
-                  </a>
+                  {tool.website_url && (
+                    <a
+                      href={tool.website_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex h-12 items-center justify-center rounded-full border border-violet-600 bg-background px-6 text-base font-semibold text-violet-700 transition hover:bg-violet-50 dark:text-violet-300 dark:hover:bg-violet-950/40"
+                    >
+                      <ExternalLink className="ms-2 h-4 w-4" />
+                      زيارة الموقع الرسمي
+                    </a>
+                  )}
+                  {tool.affiliate_url && (
+                    <a
+                      href={tool.affiliate_url}
+                      target="_blank"
+                      rel="noopener sponsored nofollow"
+                      data-affiliate-button
+                      data-tool-slug={tool.slug}
+                      className="inline-flex h-12 items-center justify-center gap-2 rounded-full bg-gradient-to-r from-emerald-500 to-emerald-600 px-7 text-base font-semibold text-white shadow-lg shadow-emerald-500/30 transition hover:from-emerald-600 hover:to-emerald-700"
+                    >
+                      <Gift className="h-4 w-4" />
+                      جرب الأداة بخصم
+                    </a>
+                  )}
                 </div>
               )}
             </div>
@@ -320,7 +339,11 @@ export default async function ToolDetailPage({
             </article>
 
             {/* Sidebar */}
-            <aside className="lg:sticky lg:top-6 lg:self-start">
+            <aside className="space-y-4 lg:sticky lg:top-6 lg:self-start">
+              {/* Sponsored slot (top of sidebar when present) */}
+              <SponsoredSlot position="tools_sidebar" />
+
+              {/* Quick info card */}
               <div className="rounded-2xl border border-border bg-muted/30 p-6">
                 <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">
                   معلومات سريعة
@@ -360,6 +383,9 @@ export default async function ToolDetailPage({
                   </div>
                 </dl>
               </div>
+
+              {/* Lead-gen CTA (Phase 4.0) */}
+              <LeadGenCta variant="compact" />
             </aside>
           </div>
         </Container>
