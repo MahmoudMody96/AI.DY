@@ -54,6 +54,17 @@ pnpm-lock.yaml
 supabase/.temp/
 supabase/.branches/
 
+# dev/verification scratch (team work — keep local, don't commit)
+scripts/_*.mjs
+scripts/check-slugs.mjs
+scripts/verify-*.mjs
+blog-page-out.html
+blog-page-response.html
+sitemap-verify.xml
+/0
+_start.err.log
+_start.log
+
 # OS
 $RECYCLE.BIN/
 $AV_ASW/
