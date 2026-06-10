@@ -22,6 +22,7 @@ import "server-only";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { sendEmail, welcomeEmail } from "@/lib/resend";
 import { getPublicEnv } from "@/lib/env";
 
@@ -65,6 +66,14 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Service unavailable" }, { status: 503 });
   }
 
+  // Use service-role client for writes to bypass RLS.
+  // Public insert is fine via user client, but service_role makes the
+  // API more predictable across envs (e.g. when RLS policies change
+  // via future migrations). Falls back to user client if service key
+  // is not configured.
+  const admin = createAdminClient();
+  const writer = admin ?? supabase;
+
   // Check if already subscribed
   const { data: existing } = await supabase
     .from("newsletter")
@@ -79,7 +88,7 @@ export async function POST(req: NextRequest) {
   if (existing) {
     // Re-subscribe flow: if previously unsubscribed, clear that flag
     if (existing.unsubscribed_at) {
-      await supabase
+      await writer
         .from("newsletter")
         .update({ unsubscribed_at: null })
         .eq("id", existing.id);
@@ -97,7 +106,7 @@ export async function POST(req: NextRequest) {
   }
 
   // Insert
-  const { data: inserted, error } = await supabase
+  const { data: inserted, error } = await writer
     .from("newsletter")
     .insert({
       email,
@@ -109,8 +118,30 @@ export async function POST(req: NextRequest) {
     .single<{ id: string }>();
 
   if (error) {
+    const errMsg = (error as { message?: string }).message ?? "Unknown error";
+    const errCode = (error as { code?: string }).code;
+    console.error("[newsletter/subscribe] insert error:", {
+      message: errMsg,
+      code: errCode,
+    });
+
+    // 23505 = unique_violation on email. The pre-check above should
+    // catch this, but in a race the duplicate can still win. Treat it
+    // as the same 200 idempotent response.
+    if (errCode === "23505") {
+      fireWelcomeEmail(email, name ?? null, source ?? null);
+      return NextResponse.json(
+        {
+          ok: true,
+          status: "pending",
+          message: "أنت مشترك بالفعل في النشرة",
+        },
+        { status: 200 }
+      );
+    }
+
     return NextResponse.json(
-      { error: error.message },
+      { error: errMsg },
       { status: 500 }
     );
   }

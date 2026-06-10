@@ -36,7 +36,20 @@ try {
   }
   const toolId = toolRes.rows[0].id;
 
-  // Look up any existing active homepage_hero slot
+  // First: heal any orphan slot whose tool_id no longer points to a real tool.
+  // This can happen if a seed ran before the table was fully populated and the
+  // tool was created later with a fresh UUID.
+  const orphan = await c.query(`
+    UPDATE public.sponsored_slots s
+    SET tool_id = $1
+    WHERE NOT EXISTS (SELECT 1 FROM public.tools t WHERE t.id = s.tool_id)
+    RETURNING id
+  `, [toolId]);
+  if (orphan.rows.length > 0) {
+    console.log(`Healed ${orphan.rows.length} orphan slot(s) → chatgpt (${toolId})`);
+  }
+
+  // Look up any existing active homepage_hero slot for this tool
   const existRes = await c.query(
     `SELECT id FROM public.sponsored_slots
      WHERE position = 'homepage_hero'
@@ -65,19 +78,25 @@ try {
   }
 
   // Also seed chatgpt.affiliate_url so the affiliate button is visible
+  // Use DO block — works whether or not the column exists, and is
+  // idempotent without needing a separate SELECT-then-conditional.
+  await c.query(`
+    DO $$
+    BEGIN
+      IF EXISTS (
+        SELECT 1 FROM information_schema.columns
+        WHERE table_schema='public' AND table_name='tools' AND column_name='affiliate_url'
+      ) THEN
+        UPDATE public.tools
+        SET affiliate_url = 'https://chatgpt.com/?ref=aidy-demo'
+        WHERE slug = 'chatgpt' AND affiliate_url IS NULL;
+      END IF;
+    END $$;
+  `);
   const affRes = await c.query(
     `SELECT affiliate_url FROM public.tools WHERE slug = 'chatgpt' LIMIT 1`
   );
-  if (!affRes.rows[0]?.affiliate_url) {
-    await c.query(
-      `UPDATE public.tools
-       SET affiliate_url = 'https://chatgpt.com/?ref=aidy-demo'
-       WHERE slug = 'chatgpt'`
-    );
-    console.log("Set chatgpt.affiliate_url to demo URL for visible test.");
-  } else {
-    console.log(`chatgpt.affiliate_url already set: ${affRes.rows[0].affiliate_url}`);
-  }
+  console.log(`chatgpt.affiliate_url: ${affRes.rows[0]?.affiliate_url ?? "(null — affiliate_url column missing)"}`);
 } finally {
   await c.end();
 }
