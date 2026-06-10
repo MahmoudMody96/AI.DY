@@ -158,6 +158,66 @@ export type Database = {
         };
         Relationships: [];
       };
+      blog_posts: {
+        Row: {
+          id: string;
+          slug: string;
+          title: string;
+          excerpt: string | null;
+          body_markdown: string;
+          body_html: string | null;
+          cover_image: string | null;
+          type: string;
+          target_tools: unknown;
+          target_categories: unknown;
+          seo_keywords: unknown;
+          reading_time_minutes: number | null;
+          author_id: string | null;
+          status: string;
+          published_at: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          slug: string;
+          title: string;
+          excerpt?: string | null;
+          body_markdown: string;
+          body_html?: string | null;
+          cover_image?: string | null;
+          type?: string;
+          target_tools?: unknown;
+          target_categories?: unknown;
+          seo_keywords?: unknown;
+          reading_time_minutes?: number | null;
+          author_id?: string | null;
+          status?: string;
+          published_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          slug?: string;
+          title?: string;
+          excerpt?: string | null;
+          body_markdown?: string;
+          body_html?: string | null;
+          cover_image?: string | null;
+          type?: string;
+          target_tools?: unknown;
+          target_categories?: unknown;
+          seo_keywords?: unknown;
+          reading_time_minutes?: number | null;
+          author_id?: string | null;
+          status?: string;
+          published_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
       categories: {
         Row: {
           id: string;
@@ -924,6 +984,8 @@ export type Database = {
           created_at: string;
           updated_at: string;
           search_vector: unknown | null;
+          demo_type: string | null;
+          demo_config: Json;
         };
         Insert: {
           id?: string;
@@ -973,6 +1035,8 @@ export type Database = {
           created_at?: string;
           updated_at?: string;
           search_vector?: unknown | null;
+          demo_type?: string | null;
+          demo_config?: Json;
         };
         Update: {
           id?: string;
@@ -1022,6 +1086,8 @@ export type Database = {
           created_at?: string;
           updated_at?: string;
           search_vector?: unknown | null;
+          demo_type?: string | null;
+          demo_config?: Json;
         };
         Relationships: [];
       };
