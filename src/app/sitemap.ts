@@ -32,6 +32,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${baseUrl}/`, lastModified: now, changeFrequency: "daily", priority: 1.0, alternates: { languages: { ar: `${baseUrl}/`, "x-default": `${baseUrl}/` } } },
     { url: `${baseUrl}/tools`, lastModified: now, changeFrequency: "daily", priority: 0.9 },
     { url: `${baseUrl}/categories`, lastModified: now, changeFrequency: "weekly", priority: 0.8 },
+    { url: `${baseUrl}/use-cases`, lastModified: now, changeFrequency: "weekly", priority: 0.8 },
     { url: `${baseUrl}/blog`, lastModified: now, changeFrequency: "weekly", priority: 0.7 },
     { url: `${baseUrl}/login`, lastModified: now, changeFrequency: "monthly", priority: 0.3 },
     { url: `${baseUrl}/signup`, lastModified: now, changeFrequency: "monthly", priority: 0.3 },
@@ -43,7 +44,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   try {
     const supabase = await createClient();
     if (supabase) {
-      const [{ data: tools }, { data: categories }, { data: articles }] = await Promise.all([
+      const [{ data: tools }, { data: categories }, { data: articles }, { data: useCases }] = await Promise.all([
         supabase
           .from("tools")
           .select("slug, updated_at")
@@ -56,6 +57,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         supabase
           .from("articles")
           .select("slug, updated_at, published_at")
+          .eq("status", "published"),
+        supabase
+          .from("use_cases")
+          .select("slug, updated_at")
           .eq("status", "published"),
       ]);
 
@@ -77,6 +82,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
           lastModified: a.published_at ? new Date(a.published_at) : a.updated_at ? new Date(a.updated_at) : now,
           changeFrequency: "monthly" as const,
           priority: 0.6,
+        })),
+        ...(useCases ?? []).map((uc) => ({
+          url: `${baseUrl}/use-cases/${uc.slug}`,
+          lastModified: uc.updated_at ? new Date(uc.updated_at) : now,
+          changeFrequency: "weekly" as const,
+          priority: 0.7,
         })),
       ];
     }
