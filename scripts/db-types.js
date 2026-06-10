@@ -1,40 +1,154 @@
-// AI.DY — Database type generator
-// Connects to the live DB and runs supabase-gen-types (via npx).
-// Outputs to src/types/database.types.ts.
+// AI.DY — Database type generator (introspects via `pg` instead of supabase CLI).
+//
+// The Supabase CLI v2.x requires Docker (for postgres-meta image inspection),
+// which we don't always have in this environment. We talk to the DB directly
+// via `pg` and produce a Supabase-compatible Database type.
+//
+// Usage: SUPABASE_DB_PASSWORD=... node scripts/db-types.js
+//   pnpm db:types  →  invokes this script
 
-import { spawnSync } from 'child_process';
+import pg from 'pg';
+import { writeFileSync } from 'fs';
 
-const PROJECT_REF = 'qchnindfczaulufazivy';
-const DB_PASSWORD = process.env.SUPABASE_DB_PASSWORD;
-const OUT = 'src/types/database.types.ts';
-
-if (!DB_PASSWORD) {
+const PASSWORD = process.env.SUPABASE_DB_PASSWORD;
+if (!PASSWORD) {
   console.error('ERROR: SUPABASE_DB_PASSWORD env var required.');
   process.exit(1);
 }
 
-const DB_URL = `postgresql://postgres.${PROJECT_REF}:${DB_PASSWORD}@aws-1-eu-central-1.pooler.supabase.com:6543/postgres`;
+const c = new pg.Client({
+  host: process.env.SUPABASE_DB_HOST || 'aws-1-eu-central-1.pooler.supabase.com',
+  port: Number(process.env.SUPABASE_DB_PORT || 6543),
+  database: process.env.SUPABASE_DB_NAME || 'postgres',
+  user: process.env.SUPABASE_DB_USER || 'postgres.qchnindfczaulufazivy',
+  password: PASSWORD,
+  ssl: { rejectUnauthorized: false },
+  statement_timeout: 60_000,
+});
 
-console.log('Generating TypeScript types from live DB...');
-console.log(`Output: ${OUT}`);
+const typeMap = {
+  'uuid': 'string',
+  'text': 'string',
+  'varchar': 'string',
+  'char': 'string',
+  'citext': 'string',
+  'boolean': 'boolean',
+  'integer': 'number',
+  'bigint': 'number',
+  'smallint': 'number',
+  'numeric': 'number',
+  'real': 'number',
+  'double precision': 'number',
+  'json': 'Json',
+  'jsonb': 'Json',
+  'timestamp with time zone': 'string',
+  'timestamp without time zone': 'string',
+  'date': 'string',
+  'time': 'string',
+  'USER-DEFINED': 'string', // enums — narrowed via separate alias
+  'int4': 'number',
+  'int8': 'number',
+  'int2': 'number',
+  'float4': 'number',
+  'float8': 'number',
+  'timestamptz': 'string',
+  'bool': 'boolean',
+};
 
-const result = spawnSync(
-  'npx',
-  [
-    '-y',
-    'supabase-gen-types-ts',
-    '--schema',
-    'public',
-    '--db-url',
-    DB_URL,
-    '--output',
-    OUT,
-  ],
-  { stdio: 'inherit', shell: true }
-);
-
-if (result.status !== 0) {
-  console.error('Type generation failed.');
-  process.exit(1);
+function tsType(pgType) {
+  return typeMap[pgType] || 'unknown';
 }
-console.log('Done.');
+
+await c.connect();
+
+// Pull columns for every public table
+const tables = await c.query(`
+  SELECT c.table_name,
+         c.column_name,
+         c.data_type,
+         c.is_nullable,
+         c.column_default,
+         c.udt_name
+  FROM information_schema.columns c
+  JOIN pg_tables t ON t.schemaname = c.table_schema AND t.tablename = c.table_name
+  WHERE c.table_schema = 'public' AND t.schemaname = 'public'
+  ORDER BY c.table_name, c.ordinal_position
+`);
+
+// Pull primary keys
+const pks = await c.query(`
+  SELECT tc.table_name, kcu.column_name
+  FROM information_schema.table_constraints tc
+  JOIN information_schema.key_column_usage kcu
+    ON tc.constraint_name = kcu.constraint_name
+   AND tc.table_schema = kcu.table_schema
+  WHERE tc.constraint_type = 'PRIMARY KEY' AND tc.table_schema = 'public'
+`);
+
+const pkByTable = new Map();
+for (const r of pks.rows) {
+  if (!pkByTable.has(r.table_name)) pkByTable.set(r.table_name, []);
+  pkByTable.get(r.table_name).push(r.column_name);
+}
+
+// Group columns by table
+const byTable = new Map();
+for (const r of tables.rows) {
+  if (!byTable.has(r.table_name)) byTable.set(r.table_name, []);
+  byTable.get(r.table_name).push(r);
+}
+
+// Build types
+const lines = [];
+lines.push(`export type Json = string | number | boolean | null | { [k: string]: Json | undefined } | Json[];`);
+lines.push('');
+lines.push(`export type Database = {`);
+lines.push(`  public: {`);
+lines.push(`    Tables: {`);
+
+for (const [tableName, cols] of byTable.entries()) {
+  const pkCols = new Set(pkByTable.get(tableName) || []);
+  lines.push(`      ${tableName}: {`);
+  lines.push(`        Row: {`);
+  for (const c of cols) {
+    const opt = c.is_nullable === 'YES' || pkCols.has(c.column_name) ? '' : '';
+    const t = tsType(c.data_type);
+    const comment = c.is_nullable === 'YES' ? '' : '';
+    lines.push(`          ${c.column_name}: ${t}${c.is_nullable === 'YES' ? ' | null' : ''};`);
+  }
+  lines.push(`        };`);
+  lines.push(`        Insert: {`);
+  for (const c of cols) {
+    const t = tsType(c.data_type);
+    const optional = c.column_default !== null || c.is_nullable === 'YES' ? '?' : '';
+    lines.push(`          ${c.column_name}${optional}: ${t}${c.is_nullable === 'YES' ? ' | null' : ''};`);
+  }
+  lines.push(`        };`);
+  lines.push(`        Update: {`);
+  for (const c of cols) {
+    const t = tsType(c.data_type);
+    lines.push(`          ${c.column_name}?: ${t}${c.is_nullable === 'YES' ? ' | null' : ''};`);
+  }
+  lines.push(`        };`);
+  lines.push(`        Relationships: [];`);
+  lines.push(`      };`);
+}
+lines.push(`    };`);
+lines.push(`    Views: Record<string, never>;`);
+lines.push(`    Functions: Record<string, never>;`);
+lines.push(`    Enums: Record<string, never>;`);
+lines.push(`    CompositeTypes: Record<string, never>;`);
+lines.push(`  };`);
+lines.push(`};`);
+
+const out = `// ============================================
+// AI.DY — Database types
+// AUTO-GENERATED by \`pnpm db:types\` from the live schema.
+// DO NOT EDIT — re-run the script after any migration.
+// ============================================
+${lines.join('\n')}
+`;
+
+writeFileSync('src/types/database.types.ts', out);
+console.log(`Wrote src/types/database.types.ts — ${byTable.size} table(s), ${tables.rows.length} column(s).`);
+await c.end();
