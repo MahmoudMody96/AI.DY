@@ -16,7 +16,7 @@ export function ToolGrid({
 }) {
   if (tools.length === 0 && emptyMessage) {
     return (
-      <div className="rounded-2xl border border-dashed border-border bg-card/50 p-12 text-center">
+      <div className="rounded-lg border border-dashed border-border bg-surface/40 p-12 text-center">
         <p className="text-sm text-muted-foreground">{emptyMessage}</p>
       </div>
     );

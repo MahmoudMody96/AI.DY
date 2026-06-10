@@ -28,7 +28,7 @@ export function LoadingSkeleton({
     return (
       <div
         className={cn(
-          "flex flex-col gap-3 rounded-2xl border border-border bg-card p-5",
+          "flex flex-col gap-3 rounded-lg border border-border bg-card p-5",
           className
         )}
         aria-busy="true"
@@ -55,7 +55,7 @@ export function LoadingSkeleton({
     return (
       <div
         className={cn(
-          "flex items-center gap-3 rounded-xl border border-border bg-card p-3",
+          "flex items-center gap-3 rounded-md border border-border bg-card p-3",
           className
         )}
         aria-busy="true"

@@ -51,12 +51,12 @@ export function CategoryCard({
       <Link
         href={href}
         className={cn(
-          "group flex flex-col items-center gap-2 rounded-xl border border-border bg-card p-4 text-center transition hover:-translate-y-0.5 hover:shadow-md",
+          "group flex flex-col items-center gap-2 rounded-md border border-border bg-card p-4 text-center transition hover:-translate-y-0.5 hover:shadow-warm-sm",
           className
         )}
       >
         <div
-          className="flex h-10 w-10 items-center justify-center rounded-lg text-xl"
+          className="flex h-10 w-10 items-center justify-center rounded-md text-xl"
           style={{ backgroundColor: `${tint}1A` }}
         >
           {categoryEmoji(category.icon)}
@@ -73,7 +73,7 @@ export function CategoryCard({
       <Link
         href={href}
         className={cn(
-          "group relative overflow-hidden rounded-2xl border border-border bg-card p-5 transition-all hover:-translate-y-0.5 hover:shadow-lg",
+          "group relative overflow-hidden rounded-lg border border-border bg-card p-5 transition-all hover:-translate-y-0.5 hover:shadow-warm-md",
           className
         )}
       >
@@ -84,7 +84,7 @@ export function CategoryCard({
           }}
         />
         <div
-          className="mb-3 flex h-12 w-12 items-center justify-center rounded-xl text-2xl"
+          className="mb-3 flex h-12 w-12 items-center justify-center rounded-md text-2xl"
           style={{ backgroundColor: `${tint}15` }}
         >
           {categoryEmoji(category.icon)}
@@ -104,12 +104,12 @@ export function CategoryCard({
     <Link
       href={href}
       className={cn(
-        "group flex items-start gap-4 rounded-2xl border border-border bg-card p-6 transition hover:-translate-y-1 hover:shadow-lg",
+        "group flex items-start gap-4 rounded-lg border border-border bg-card p-6 transition hover:-translate-y-0.5 hover:shadow-warm-md",
         className
       )}
     >
       <div
-        className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl text-3xl"
+        className="flex h-14 w-14 shrink-0 items-center justify-center rounded-md text-3xl"
         style={{ backgroundColor: `${tint}20` }}
       >
         {categoryEmoji(category.icon)}

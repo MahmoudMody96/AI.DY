@@ -5,24 +5,35 @@ import { Slot } from "@radix-ui/react-slot";
 import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
+/**
+ * Button — warm earthy MENA-modern.
+ * Default: solid terracotta. Outline: cream surface + warm border.
+ * Ghost: transparent, terracotta on hover. Link: text-only.
+ * Radii: 8px (rounded, not pill). No gradient shadows.
+ */
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-full text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-400 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
   {
     variants: {
       variant: {
-        default: "bg-violet-600 text-white shadow-md shadow-violet-500/20 hover:bg-violet-700",
-        destructive: "bg-red-600 text-white shadow-sm hover:bg-red-700",
+        default:
+          "bg-primary text-primary-foreground shadow-warm-sm hover:bg-brand-dark active:translate-y-px",
+        destructive:
+          "bg-destructive text-destructive-foreground shadow-warm-sm hover:opacity-90",
         outline:
-          "border border-zinc-300 bg-white text-zinc-900 shadow-sm hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:bg-zinc-800",
+          "border border-border bg-surface-elevated text-foreground shadow-warm-sm hover:bg-surface hover:border-border-strong",
         secondary:
-          "bg-zinc-100 text-zinc-900 shadow-sm hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-100 dark:hover:bg-zinc-700",
-        ghost: "hover:bg-zinc-100 hover:text-zinc-900 dark:hover:bg-zinc-800 dark:hover:text-zinc-100",
-        link: "text-violet-600 underline-offset-4 hover:underline",
+          "bg-secondary text-secondary-foreground shadow-warm-sm hover:opacity-90",
+        ghost:
+          "text-foreground hover:bg-surface hover:text-primary",
+        link:
+          "text-primary underline-offset-4 hover:underline",
       },
       size: {
         default: "h-10 px-5",
         sm: "h-8 px-3 text-xs",
-        lg: "h-12 px-8 text-base",
+        lg: "h-12 px-7 text-base",
+        xl: "h-14 px-8 text-base",
         icon: "h-10 w-10",
       },
     },

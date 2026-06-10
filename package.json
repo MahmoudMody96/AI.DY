@@ -11,6 +11,7 @@
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
     "format": "prettier --write \"src/**/*.{ts,tsx,css,md}\"",
+    "smoke:screenshot": "node scripts/smoke-screenshot.mjs",
     "db:types": "node scripts/db-types.js",
     "db:wipe": "node scripts/db-nuke.js",
     "db:reset": "node scripts/db-reset.js"
@@ -45,6 +46,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.2.6",
     "pg": "^8.21.0",
+    "playwright": "^1.60.0",
     "tailwindcss": "^4",
     "typescript": "^5"
   }

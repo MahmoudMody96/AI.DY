@@ -21,9 +21,7 @@ export function PageHeader({
     <div className={cn("mb-6 flex flex-wrap items-end justify-between gap-4", className)}>
       <div>
         {eyebrow && (
-          <p className="mb-2 text-xs font-semibold uppercase tracking-[0.18em] text-primary">
-            {eyebrow}
-          </p>
+          <p className="eyebrow mb-2">{eyebrow}</p>
         )}
         <h1 className="text-3xl font-black tracking-tight sm:text-4xl">
           {title}

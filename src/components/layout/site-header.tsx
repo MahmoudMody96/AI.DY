@@ -26,30 +26,30 @@ export async function SiteHeader() {
   }
 
   return (
-    <header className="sticky top-0 z-40 border-b border-zinc-200 bg-white/80 backdrop-blur-md dark:border-zinc-800 dark:bg-zinc-950/80">
+    <header className="sticky top-0 z-40 border-b border-border bg-background/85 backdrop-blur-sm">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-6">
         <Logo href="/" size="md" />
 
         <nav className="hidden items-center gap-6 md:flex">
-          <Link href="/tools" className="text-sm font-medium text-zinc-700 hover:text-violet-600 dark:text-zinc-300">
+          <Link href="/tools" className="text-sm font-medium text-foreground-soft transition-colors hover:text-primary">
             الأدوات
           </Link>
-          <Link href="/categories" className="text-sm font-medium text-zinc-700 hover:text-violet-600 dark:text-zinc-300">
+          <Link href="/categories" className="text-sm font-medium text-foreground-soft transition-colors hover:text-primary">
             الفئات
           </Link>
-          <Link href="/use-cases" className="text-sm font-medium text-zinc-700 hover:text-violet-600 dark:text-zinc-300">
+          <Link href="/use-cases" className="text-sm font-medium text-foreground-soft transition-colors hover:text-primary">
             حالات الاستخدام
           </Link>
-          <Link href="/news" className="text-sm font-medium text-zinc-700 hover:text-violet-600 dark:text-zinc-300">
+          <Link href="/news" className="text-sm font-medium text-foreground-soft transition-colors hover:text-primary">
             الأخبار
           </Link>
-          <Link href="/blog" className="text-sm font-medium text-zinc-700 hover:text-violet-600 dark:text-zinc-300">
+          <Link href="/blog" className="text-sm font-medium text-foreground-soft transition-colors hover:text-primary">
             المدونة
           </Link>
           {isAdmin && (
             <Link
               href="/admin"
-              className="inline-flex items-center gap-1 text-sm font-semibold text-violet-600 hover:text-violet-700 dark:text-violet-400"
+              className="inline-flex items-center gap-1 text-sm font-semibold text-primary transition-colors hover:text-brand-dark"
             >
               <Settings className="h-3.5 w-3.5" />
               Admin

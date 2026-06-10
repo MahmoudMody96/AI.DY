@@ -62,9 +62,9 @@ export function SearchBar({
         onChange={(e) => setLocal(e.target.value)}
         placeholder={placeholder}
         className={cn(
-          "h-10 w-full rounded-full border border-input bg-background pe-10 ps-10 text-sm shadow-sm transition",
+          "h-10 w-full rounded-md border border-input bg-surface-elevated pe-10 ps-10 text-sm shadow-warm-sm transition",
           "placeholder:text-muted-foreground",
-          "focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/30"
+          "focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/25"
         )}
         aria-label="Search"
       />

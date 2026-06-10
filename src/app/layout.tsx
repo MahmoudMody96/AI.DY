@@ -1,18 +1,30 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Cairo, Tajawal, Inter } from "next/font/google";
+import { Reem_Kufi, Tajawal, Inter, Fraunces } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { SiteHeader } from "@/components/layout/site-header";
 import { SiteFooter } from "@/components/layout/site-footer";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
+/* ============================================================
+   AI.DY — typography
+   ------------------------------------------------------------
+   Display: Reem Kufi (Arabic) + Fraunces (Latin) — characterful,
+            modern Kufi for Arabic, soft serif for Latin
+   Body:    Tajawal (Arabic)     + Inter    (Latin) — clean, readable
+   ============================================================ */
+
+const reemKufi = Reem_Kufi({
+  variable: "--font-reem-kufi",
+  subsets: ["arabic", "latin"],
+  weight: ["400", "500", "600", "700"],
+  display: "swap",
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const fraunces = Fraunces({
+  variable: "--font-fraunces",
   subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  display: "swap",
 });
 
 const inter = Inter({
@@ -21,16 +33,11 @@ const inter = Inter({
   display: "swap",
 });
 
-const cairo = Cairo({
-  variable: "--font-cairo",
-  subsets: ["arabic", "latin"],
-  weight: ["400", "600", "700", "900"],
-});
-
 const tajawal = Tajawal({
   variable: "--font-tajawal",
   subsets: ["arabic", "latin"],
   weight: ["400", "500", "700", "900"],
+  display: "swap",
 });
 
 function getBaseUrl(): string {
@@ -96,9 +103,9 @@ export default function RootLayout({
       lang="ar"
       dir="rtl"
       suppressHydrationWarning
-      className={`${geistSans.variable} ${geistMono.variable} ${inter.variable} ${cairo.variable} ${tajawal.variable} h-full antialiased`}
+      className={`${reemKufi.variable} ${fraunces.variable} ${inter.variable} ${tajawal.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-zinc-50 dark:bg-zinc-950">
+      <body className="min-h-full flex flex-col bg-background text-foreground">
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
           <SiteHeader />
           {children}

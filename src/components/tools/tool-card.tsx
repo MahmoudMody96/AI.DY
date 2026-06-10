@@ -29,9 +29,8 @@ export function ToolCard({ tool, className }: { tool: ToolCardData; className?: 
     <Link
       href={`/tools/${tool.slug}`}
       className={cn(
-        "group relative flex flex-col rounded-2xl border border-border bg-card p-5 transition-all duration-200",
-        "hover:-translate-y-0.5 hover:border-border hover:shadow-[0_8px_32px_-8px_rgba(0,0,0,0.12)]",
-        "dark:hover:border-border",
+        "group relative flex flex-col rounded-lg border border-border bg-card p-5 transition-all duration-200",
+        "hover:-translate-y-0.5 hover:border-border-strong hover:shadow-warm-md",
         className
       )}
     >
@@ -66,9 +65,7 @@ export function ToolCard({ tool, className }: { tool: ToolCardData; className?: 
         <span
           className={cn(
             "font-semibold",
-            isFree
-              ? "text-emerald-600 dark:text-emerald-400"
-              : "text-foreground"
+            isFree ? "text-success" : "text-foreground"
           )}
         >
           {priceLabel(tool)}
