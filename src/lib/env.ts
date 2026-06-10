@@ -23,6 +23,9 @@ const ServerEnv = z.object({
   OPENAI_API_KEY: z.string().min(1).optional(),
   ANTHROPIC_API_KEY: z.string().min(1).optional(),
   GEMINI_API_KEY: z.string().min(1).optional(),
+  // Content Engine API key. Compared in constant time by /api/admin/content.
+  // Optional in dev (route is open with a warning if not set in non-prod).
+  ADMIN_API_KEY: z.string().min(8).optional(),
 });
 
 const PublicEnv = z.object({
