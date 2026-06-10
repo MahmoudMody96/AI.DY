@@ -1,5 +1,5 @@
 -- ============================================
--- 150_auth_handle_new_user.sql
+-- 100_auth_handle_new_user.sql
 --
 -- Phase 1.1 — Auth Live
 -- Re-asserts the auth.users → public.profiles trigger so signup
@@ -10,6 +10,9 @@
 -- This migration re-asserts the canonical version (display_name column,
 -- SECURITY DEFINER, search_path = public, auth) and backfills any
 -- auth.users rows that pre-date the trigger activation.
+--
+-- Sits alongside 100_media_storage.sql (alphabetical: 100_a < 100_m,
+-- so this runs first — no dependency on the storage bucket anyway).
 -- ============================================
 
 -- 1) Re-create handle_new_user() — idempotent
