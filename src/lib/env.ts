@@ -18,6 +18,11 @@ const ServerEnv = z.object({
   NEXT_PUBLIC_SITE_NAME: z.string().min(1).default('AI.DY'),
   RESEND_API_KEY: z.string().min(1).optional(),
   RESEND_FROM_EMAIL: z.string().email().optional(),
+  // Demo proxy — provider API keys. Optional; the chat route
+  // returns a friendly placeholder when none are set.
+  OPENAI_API_KEY: z.string().min(1).optional(),
+  ANTHROPIC_API_KEY: z.string().min(1).optional(),
+  GEMINI_API_KEY: z.string().min(1).optional(),
 });
 
 const PublicEnv = z.object({
