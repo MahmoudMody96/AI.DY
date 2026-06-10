@@ -3,6 +3,9 @@ import { createClient } from "@/lib/supabase/server";
 import { CheckCircle2, X, Trash2, MessageCircle, Eye } from "lucide-react";
 import { setCommentStatus, deleteComment } from "./actions";
 import { ConfirmFormSubmit } from "../_components/confirm-form-submit";
+import { Button } from "@/components/ui/button";
+import { StatusBadge } from "@/components/ui/status-badge";
+import { cn } from "@/lib/utils";
 
 function relativeTime(iso: string | null | undefined): string {
   if (!iso) return "—";
@@ -18,16 +21,9 @@ function relativeTime(iso: string | null | undefined): string {
   return d.toLocaleDateString();
 }
 
-const STATUS_COLOR = {
-  pending: "bg-amber-100 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300",
-  approved: "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300",
-  rejected: "bg-rose-100 text-rose-700 dark:bg-rose-950/50 dark:text-rose-300",
-  spam: "bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300",
-} as const;
-
 export default async function AdminCommentsPage() {
   const admin = await createClient();
-  if (!admin) return <div className="text-zinc-500">Admin client unavailable</div>;
+  if (!admin) return <div className="text-muted-foreground">Admin client unavailable</div>;
 
   const { data: comments } = await admin
     .from("post_comments")
@@ -68,20 +64,27 @@ export default async function AdminCommentsPage() {
     {} as Record<string, number>
   );
 
+  const TONE_BY_STATUS: Record<string, "success" | "warning" | "danger" | "muted"> = {
+    pending: "warning",
+    approved: "success",
+    rejected: "danger",
+    spam: "muted",
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Comments</h1>
-          <p className="text-sm text-zinc-500">
+          <p className="text-sm text-muted-foreground">
             {list.length} total · {counts.pending ?? 0} pending · {counts.approved ?? 0} approved · {counts.rejected ?? 0} rejected
           </p>
         </div>
       </div>
 
-      <div className="overflow-hidden rounded-lg border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
+      <div className="overflow-hidden rounded-lg border border-border bg-card">
         <table className="w-full text-sm">
-          <thead className="border-b border-zinc-200 bg-zinc-50 text-left text-xs font-medium uppercase tracking-wider text-zinc-500 dark:border-zinc-800 dark:bg-zinc-900/50">
+          <thead className="border-b border-border bg-muted text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">
             <tr>
               <th className="px-4 py-2.5">Content</th>
               <th className="px-4 py-2.5">Author</th>
@@ -91,26 +94,26 @@ export default async function AdminCommentsPage() {
               <th className="px-4 py-2.5">Actions</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800">
+          <tbody className="divide-y divide-border">
             {list.length === 0 && (
               <tr>
-                <td colSpan={6} className="px-4 py-12 text-center text-zinc-500">
-                  <MessageCircle className="mx-auto mb-2 h-8 w-8 text-zinc-300" />
+                <td colSpan={6} className="px-4 py-12 text-center text-muted-foreground">
+                  <MessageCircle className="mx-auto mb-2 h-8 w-8 text-muted-foreground/60" />
                   لا توجد تعليقات بعد
                 </td>
               </tr>
             )}
             {list.map((c) => {
-              const status = c.status as keyof typeof STATUS_COLOR;
+              const status = c.status as keyof typeof TONE_BY_STATUS;
               const post = postMap[c.post_id];
               return (
-                <tr key={c.id} className="hover:bg-zinc-50/50 dark:hover:bg-zinc-800/30">
+                <tr key={c.id} className="transition-colors hover:bg-muted/50">
                   <td className="px-4 py-2.5">
-                    <p className="line-clamp-2 max-w-md text-zinc-800 dark:text-zinc-200">
+                    <p className="line-clamp-2 max-w-md text-foreground/90">
                       {c.content}
                     </p>
                   </td>
-                  <td className="px-4 py-2.5 text-zinc-600 dark:text-zinc-400">
+                  <td className="px-4 py-2.5 text-muted-foreground">
                     {userMap[c.user_id] ?? "—"}
                   </td>
                   <td className="px-4 py-2.5">
@@ -118,68 +121,73 @@ export default async function AdminCommentsPage() {
                       <Link
                         href={`/blog/${post.slug}`}
                         target="_blank"
-                        className="line-clamp-1 max-w-xs text-violet-700 hover:underline dark:text-violet-400"
+                        className="line-clamp-1 max-w-xs text-primary hover:underline"
                       >
                         {post.title}
                       </Link>
                     ) : (
-                      <span className="text-zinc-400">—</span>
+                      <span className="text-muted-foreground">—</span>
                     )}
                   </td>
                   <td className="px-4 py-2.5">
-                    <span
-                      className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_COLOR[status] ?? STATUS_COLOR.pending}`}
-                    >
-                      {status}
-                    </span>
+                    <StatusBadge value={status} tone={TONE_BY_STATUS[status] ?? "warning"} />
                   </td>
-                  <td className="px-4 py-2.5 text-zinc-500">{relativeTime(c.created_at)}</td>
+                  <td className="px-4 py-2.5 text-muted-foreground">{relativeTime(c.created_at)}</td>
                   <td className="px-4 py-2.5">
                     <div className="flex items-center gap-1">
                       {c.status !== "approved" && (
                         <form action={setCommentStatus}>
                           <input type="hidden" name="id" value={c.id} />
                           <input type="hidden" name="status" value="approved" />
-                          <button
+                          <Button
                             type="submit"
-                            className="inline-flex items-center gap-1 rounded border border-emerald-200 bg-emerald-50 px-2 py-1 text-xs font-medium text-emerald-700 hover:bg-emerald-100 dark:border-emerald-900 dark:bg-emerald-950/30 dark:text-emerald-300"
+                            size="sm"
+                            variant="outline"
+                            className="border-emerald-300 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:border-emerald-900 dark:bg-emerald-950/30 dark:text-emerald-300"
                           >
                             <CheckCircle2 className="h-3 w-3" />
                             Approve
-                          </button>
+                          </Button>
                         </form>
                       )}
                       {c.status !== "rejected" && (
                         <form action={setCommentStatus}>
                           <input type="hidden" name="id" value={c.id} />
                           <input type="hidden" name="status" value="rejected" />
-                          <button
+                          <Button
                             type="submit"
-                            className="inline-flex items-center gap-1 rounded border border-rose-200 bg-rose-50 px-2 py-1 text-xs font-medium text-rose-700 hover:bg-rose-100 dark:border-rose-900 dark:bg-rose-950/30 dark:text-rose-300"
+                            size="sm"
+                            variant="outline"
+                            className="border-rose-300 bg-rose-50 text-rose-700 hover:bg-rose-100 dark:border-rose-900 dark:bg-rose-950/30 dark:text-rose-300"
                           >
                             <X className="h-3 w-3" />
                             Reject
-                          </button>
+                          </Button>
                         </form>
                       )}
                       {c.status !== "spam" && (
                         <form action={setCommentStatus}>
                           <input type="hidden" name="id" value={c.id} />
                           <input type="hidden" name="status" value="spam" />
-                          <button
+                          <Button
                             type="submit"
-                            className="inline-flex items-center gap-1 rounded border border-zinc-200 bg-zinc-50 px-2 py-1 text-xs font-medium text-zinc-700 hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300"
+                            size="sm"
+                            variant="outline"
+                            className="border-border bg-muted text-foreground hover:bg-muted/80"
                           >
                             <Eye className="h-3 w-3" />
                             Spam
-                          </button>
+                          </Button>
                         </form>
                       )}
                       <ConfirmFormSubmit
                         formAction={deleteComment}
                         id={c.id}
                         message="Delete this comment permanently?"
-                        className="inline-flex items-center gap-1 rounded border border-rose-200 bg-white px-2 py-1 text-xs font-medium text-rose-600 hover:bg-rose-50 dark:border-rose-900 dark:bg-zinc-900 dark:text-rose-400 dark:hover:bg-rose-950/30"
+                        className={cn(
+                          "inline-flex items-center gap-1 rounded-md border border-rose-200 bg-background px-2 py-1 text-xs font-medium text-rose-600 hover:bg-rose-50",
+                          "dark:border-rose-900 dark:text-rose-400 dark:hover:bg-rose-950/30"
+                        )}
                       >
                         <Trash2 className="h-3 w-3" />
                       </ConfirmFormSubmit>

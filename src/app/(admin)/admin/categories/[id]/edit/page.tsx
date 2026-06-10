@@ -33,7 +33,7 @@ export default async function EditCategoryPage({
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <Link href="/admin/categories" className="text-xs text-zinc-500 hover:text-zinc-700">
+          <Link href="/admin/categories" className="text-xs text-muted-foreground hover:text-foreground">
             ← Categories
           </Link>
           <h1 className="mt-1 text-2xl font-semibold tracking-tight">
@@ -50,8 +50,8 @@ export default async function EditCategoryPage({
       <form action={saveCategory} className="space-y-6">
         {cat && cat.id ? <input type="hidden" name="id" value={String(cat.id)} /> : null}
 
-        <div className="rounded-lg border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
-          <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-zinc-500">Basics</h2>
+        <div className="rounded-lg border border-input bg-background p-6 border-input bg-card">
+          <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-muted-foreground">Basics</h2>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <Input label="Name (Arabic) *" name="name" required defaultValue={(cat?.name as string) ?? ""} />
             <Input label="Name (English)" name="name_en" defaultValue={(cat?.name_en as string) ?? ""} />
@@ -62,7 +62,7 @@ export default async function EditCategoryPage({
                 name="position"
                 type="number"
                 defaultValue={(cat?.position as number | null)?.toString() ?? "0"}
-                className="w-full rounded-md border border-zinc-200 bg-white px-3 py-1.5 text-sm dark:border-zinc-800 dark:bg-zinc-900"
+                className="w-full rounded-md border border-input bg-background px-3 py-1.5 text-sm border-input bg-card"
               />
             </div>
             <Input label="Icon (lucide name)" name="icon" defaultValue={(cat?.icon as string) ?? ""} hint="e.g. Bot, PenTool, ImageIcon" />
@@ -73,41 +73,41 @@ export default async function EditCategoryPage({
                 name="description"
                 rows={3}
                 defaultValue={(cat?.description as string) ?? ""}
-                className="w-full rounded-md border border-zinc-200 bg-white px-3 py-1.5 text-sm dark:border-zinc-800 dark:bg-zinc-900"
+                className="w-full rounded-md border border-input bg-background px-3 py-1.5 text-sm border-input bg-card"
               />
             </div>
           </div>
         </div>
 
-        <div className="rounded-lg border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
-          <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-zinc-500">SEO</h2>
+        <div className="rounded-lg border border-input bg-background p-6 border-input bg-card">
+          <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-muted-foreground">SEO</h2>
           <div className="grid grid-cols-1 gap-4">
             <Input label="SEO title" name="seo_title" defaultValue={(cat?.seo_title as string) ?? ""} />
             <Input label="SEO description" name="seo_description" defaultValue={(cat?.seo_description as string) ?? ""} />
           </div>
         </div>
 
-        <div className="rounded-lg border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
+        <div className="rounded-lg border border-input bg-background p-6 border-input bg-card">
           <label className="flex items-start gap-3 cursor-pointer">
             <input
               type="checkbox"
               name="is_active"
               defaultChecked={(cat?.is_active as boolean) ?? true}
-              className="mt-0.5 h-4 w-4 rounded border-zinc-300 text-violet-600"
+              className="mt-0.5 h-4 w-4 rounded border-input text-violet-600"
             />
             <div>
               <div className="text-sm font-medium">Active</div>
-              <div className="text-xs text-zinc-500">Visible on the public site</div>
+              <div className="text-xs text-muted-foreground">Visible on the public site</div>
             </div>
           </label>
         </div>
 
-        <div className="flex items-center justify-between border-t border-zinc-200 pt-4 dark:border-zinc-800">
+        <div className="flex items-center justify-between border-t border-input pt-4 border-input">
           <div className="flex gap-2">
             <button type="submit" className="rounded-md bg-violet-600 px-4 py-2 text-sm font-medium text-white hover:bg-violet-700">
               {isNew ? "Create" : "Save"}
             </button>
-            <Link href="/admin/categories" className="rounded-md border border-zinc-200 bg-white px-4 py-2 text-sm font-medium hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900 dark:hover:bg-zinc-800">
+            <Link href="/admin/categories" className="rounded-md border border-input bg-background px-4 py-2 text-sm font-medium hover:bg-muted border-input bg-card hover:bg-muted">
               Cancel
             </Link>
           </div>

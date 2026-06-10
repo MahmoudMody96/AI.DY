@@ -3,6 +3,9 @@ import { createClient } from "@/lib/supabase/server";
 import { CheckCircle2, Flag, Archive, X, Eye, Heart, MessageCircle, Trash2 } from "lucide-react";
 import { setUserPostStatus, deleteUserPost } from "./actions";
 import { ConfirmFormSubmit } from "../_components/confirm-form-submit";
+import { Button } from "@/components/ui/button";
+import { StatusBadge } from "@/components/ui/status-badge";
+import { cn } from "@/lib/utils";
 
 function relativeTime(iso: string | null | undefined): string {
   if (!iso) return "—";
@@ -18,25 +21,9 @@ function relativeTime(iso: string | null | undefined): string {
   return d.toLocaleDateString();
 }
 
-const STATUS_ICON = {
-  draft: <Eye className="h-3 w-3" />,
-  published: <CheckCircle2 className="h-3 w-3" />,
-  flagged: <Flag className="h-3 w-3" />,
-  archived: <Archive className="h-3 w-3" />,
-  rejected: <X className="h-3 w-3" />,
-} as const;
-
-const STATUS_COLOR = {
-  draft: "bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300",
-  published: "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300",
-  flagged: "bg-amber-100 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300",
-  archived: "bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300",
-  rejected: "bg-rose-100 text-rose-700 dark:bg-rose-950/50 dark:text-rose-300",
-} as const;
-
 export default async function AdminUserPostsPage() {
   const admin = await createClient();
-  if (!admin) return <div className="text-zinc-500">Admin client unavailable</div>;
+  if (!admin) return <div className="text-muted-foreground">Admin client unavailable</div>;
 
   const { data: posts } = await admin
     .from("user_posts")
@@ -71,15 +58,15 @@ export default async function AdminUserPostsPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">User Posts</h1>
-          <p className="text-sm text-zinc-500">
+          <p className="text-sm text-muted-foreground">
             {list.length} total · {counts.published ?? 0} published · {counts.flagged ?? 0} flagged · {counts.draft ?? 0} drafts
           </p>
         </div>
       </div>
 
-      <div className="overflow-hidden rounded-lg border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
+      <div className="overflow-hidden rounded-lg border border-border bg-card">
         <table className="w-full text-sm">
-          <thead className="border-b border-zinc-200 bg-zinc-50 text-left text-xs font-medium uppercase tracking-wider text-zinc-500 dark:border-zinc-800 dark:bg-zinc-900/50">
+          <thead className="border-b border-border bg-muted text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">
             <tr>
               <th className="px-4 py-2.5">Title</th>
               <th className="px-4 py-2.5">Author</th>
@@ -89,117 +76,120 @@ export default async function AdminUserPostsPage() {
               <th className="px-4 py-2.5">Actions</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800">
+          <tbody className="divide-y divide-border">
             {list.length === 0 && (
               <tr>
-                <td colSpan={6} className="px-4 py-12 text-center text-zinc-500">
+                <td colSpan={6} className="px-4 py-12 text-center text-muted-foreground">
                   لا توجد مشاركات بعد — الأعضاء يقدروا ينشروا من /blog
                 </td>
               </tr>
             )}
-            {list.map((p) => {
-              const status = p.status as keyof typeof STATUS_ICON;
-              return (
-                <tr key={p.id} className="hover:bg-zinc-50/50 dark:hover:bg-zinc-800/30">
-                  <td className="px-4 py-2.5">
-                    <Link
-                      href={`/blog/${p.slug}`}
-                      target="_blank"
-                      className="font-medium text-violet-700 hover:underline dark:text-violet-400"
-                    >
-                      {p.title}
-                    </Link>
-                    <div className="text-xs text-zinc-400">/blog/{p.slug}</div>
-                  </td>
-                  <td className="px-4 py-2.5 text-zinc-600 dark:text-zinc-400">
-                    {authorMap[p.author_id] ?? "—"}
-                  </td>
-                  <td className="px-4 py-2.5">
-                    <span
-                      className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_COLOR[status] ?? STATUS_COLOR.draft}`}
-                    >
-                      {STATUS_ICON[status] ?? STATUS_ICON.draft}
-                      {status}
+            {list.map((p) => (
+              <tr key={p.id} className="transition-colors hover:bg-muted/50">
+                <td className="px-4 py-2.5">
+                  <Link
+                    href={`/blog/${p.slug}`}
+                    target="_blank"
+                    className="font-medium text-primary hover:underline"
+                  >
+                    {p.title}
+                  </Link>
+                  <div className="text-xs text-muted-foreground">/blog/{p.slug}</div>
+                </td>
+                <td className="px-4 py-2.5 text-muted-foreground">
+                  {authorMap[p.author_id] ?? "—"}
+                </td>
+                <td className="px-4 py-2.5">
+                  <StatusBadge value={p.status} />
+                </td>
+                <td className="px-4 py-2.5 text-muted-foreground">
+                  <div className="flex items-center gap-3 text-xs">
+                    <span className="inline-flex items-center gap-1">
+                      <Heart className="h-3 w-3" /> {p.likes_count}
                     </span>
-                  </td>
-                  <td className="px-4 py-2.5 text-zinc-500">
-                    <div className="flex items-center gap-3 text-xs">
-                      <span className="inline-flex items-center gap-1">
-                        <Heart className="h-3 w-3" /> {p.likes_count}
-                      </span>
-                      <span className="inline-flex items-center gap-1">
-                        <MessageCircle className="h-3 w-3" /> {p.comments_count}
-                      </span>
-                    </div>
-                  </td>
-                  <td className="px-4 py-2.5 text-zinc-500">{relativeTime(p.updated_at)}</td>
-                  <td className="px-4 py-2.5">
-                    <div className="flex items-center gap-1">
-                      {p.status !== "published" && (
-                        <form action={setUserPostStatus}>
-                          <input type="hidden" name="id" value={p.id} />
-                          <input type="hidden" name="status" value="published" />
-                          <button
-                            type="submit"
-                            className="inline-flex items-center gap-1 rounded border border-emerald-200 bg-emerald-50 px-2 py-1 text-xs font-medium text-emerald-700 hover:bg-emerald-100 dark:border-emerald-900 dark:bg-emerald-950/30 dark:text-emerald-300"
-                          >
-                            <CheckCircle2 className="h-3 w-3" />
-                            Publish
-                          </button>
-                        </form>
+                    <span className="inline-flex items-center gap-1">
+                      <MessageCircle className="h-3 w-3" /> {p.comments_count}
+                    </span>
+                  </div>
+                </td>
+                <td className="px-4 py-2.5 text-muted-foreground">{relativeTime(p.updated_at)}</td>
+                <td className="px-4 py-2.5">
+                  <div className="flex items-center gap-1">
+                    {p.status !== "published" && (
+                      <form action={setUserPostStatus}>
+                        <input type="hidden" name="id" value={p.id} />
+                        <input type="hidden" name="status" value="published" />
+                        <Button
+                          type="submit"
+                          size="sm"
+                          variant="outline"
+                          className="border-emerald-300 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:border-emerald-900 dark:bg-emerald-950/30 dark:text-emerald-300"
+                        >
+                          <CheckCircle2 className="h-3 w-3" />
+                          Publish
+                        </Button>
+                      </form>
+                    )}
+                    {p.status !== "flagged" && p.status !== "rejected" && (
+                      <form action={setUserPostStatus}>
+                        <input type="hidden" name="id" value={p.id} />
+                        <input type="hidden" name="status" value="flagged" />
+                        <Button
+                          type="submit"
+                          size="sm"
+                          variant="outline"
+                          className="border-amber-300 bg-amber-50 text-amber-700 hover:bg-amber-100 dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-300"
+                        >
+                          <Flag className="h-3 w-3" />
+                          Flag
+                        </Button>
+                      </form>
+                    )}
+                    {p.status === "flagged" && (
+                      <form action={setUserPostStatus}>
+                        <input type="hidden" name="id" value={p.id} />
+                        <input type="hidden" name="status" value="rejected" />
+                        <Button
+                          type="submit"
+                          size="sm"
+                          variant="outline"
+                          className="border-rose-300 bg-rose-50 text-rose-700 hover:bg-rose-100 dark:border-rose-900 dark:bg-rose-950/30 dark:text-rose-300"
+                        >
+                          <X className="h-3 w-3" />
+                          Reject
+                        </Button>
+                      </form>
+                    )}
+                    {p.status !== "archived" && (
+                      <form action={setUserPostStatus}>
+                        <input type="hidden" name="id" value={p.id} />
+                        <input type="hidden" name="status" value="archived" />
+                        <Button
+                          type="submit"
+                          size="sm"
+                          variant="outline"
+                          className="border-border bg-muted text-foreground hover:bg-muted/80"
+                        >
+                          <Archive className="h-3 w-3" />
+                          Archive
+                        </Button>
+                      </form>
+                    )}
+                    <ConfirmFormSubmit
+                      formAction={deleteUserPost}
+                      id={p.id}
+                      message="Delete this post permanently?"
+                      className={cn(
+                        "inline-flex items-center gap-1 rounded-md border border-rose-200 bg-background px-2 py-1 text-xs font-medium text-rose-600 hover:bg-rose-50",
+                        "dark:border-rose-900 dark:text-rose-400 dark:hover:bg-rose-950/30"
                       )}
-                      {p.status !== "flagged" && p.status !== "rejected" && (
-                        <form action={setUserPostStatus}>
-                          <input type="hidden" name="id" value={p.id} />
-                          <input type="hidden" name="status" value="flagged" />
-                          <button
-                            type="submit"
-                            className="inline-flex items-center gap-1 rounded border border-amber-200 bg-amber-50 px-2 py-1 text-xs font-medium text-amber-700 hover:bg-amber-100 dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-300"
-                          >
-                            <Flag className="h-3 w-3" />
-                            Flag
-                          </button>
-                        </form>
-                      )}
-                      {p.status === "flagged" && (
-                        <form action={setUserPostStatus}>
-                          <input type="hidden" name="id" value={p.id} />
-                          <input type="hidden" name="status" value="rejected" />
-                          <button
-                            type="submit"
-                            className="inline-flex items-center gap-1 rounded border border-rose-200 bg-rose-50 px-2 py-1 text-xs font-medium text-rose-700 hover:bg-rose-100 dark:border-rose-900 dark:bg-rose-950/30 dark:text-rose-300"
-                          >
-                            <X className="h-3 w-3" />
-                            Reject
-                          </button>
-                        </form>
-                      )}
-                      {p.status !== "archived" && (
-                        <form action={setUserPostStatus}>
-                          <input type="hidden" name="id" value={p.id} />
-                          <input type="hidden" name="status" value="archived" />
-                          <button
-                            type="submit"
-                            className="inline-flex items-center gap-1 rounded border border-zinc-200 bg-zinc-50 px-2 py-1 text-xs font-medium text-zinc-700 hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300"
-                          >
-                            <Archive className="h-3 w-3" />
-                            Archive
-                          </button>
-                        </form>
-                      )}
-                      <ConfirmFormSubmit
-                        formAction={deleteUserPost}
-                        id={p.id}
-                        message="Delete this post permanently?"
-                        className="inline-flex items-center gap-1 rounded border border-rose-200 bg-white px-2 py-1 text-xs font-medium text-rose-600 hover:bg-rose-50 dark:border-rose-900 dark:bg-zinc-900 dark:text-rose-400 dark:hover:bg-rose-950/30"
-                      >
-                        <Trash2 className="h-3 w-3" />
-                      </ConfirmFormSubmit>
-                    </div>
-                  </td>
-                </tr>
-              );
-            })}
+                    >
+                      <Trash2 className="h-3 w-3" />
+                    </ConfirmFormSubmit>
+                  </div>
+                </td>
+              </tr>
+            ))}
           </tbody>
         </table>
       </div>

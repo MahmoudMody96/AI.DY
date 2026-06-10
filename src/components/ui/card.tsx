@@ -1,12 +1,16 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
 
+/**
+ * Card — themed container. Replaces hardcoded `bg-zinc-*` literals with
+ * theme tokens so dark mode tracks `--card` / `--card-foreground`.
+ */
 const Card = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
   ({ className, ...props }, ref) => (
     <div
       ref={ref}
       className={cn(
-        "rounded-2xl border border-zinc-200 bg-white text-zinc-900 shadow-sm dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100",
+        "rounded-2xl border border-border bg-card text-card-foreground shadow-sm",
         className
       )}
       {...props}
@@ -31,7 +35,7 @@ CardTitle.displayName = "CardTitle";
 
 const CardDescription = React.forwardRef<HTMLParagraphElement, React.HTMLAttributes<HTMLParagraphElement>>(
   ({ className, ...props }, ref) => (
-    <p ref={ref} className={cn("text-sm text-zinc-500 dark:text-zinc-400", className)} {...props} />
+    <p ref={ref} className={cn("text-sm text-muted-foreground", className)} {...props} />
   )
 );
 CardDescription.displayName = "CardDescription";

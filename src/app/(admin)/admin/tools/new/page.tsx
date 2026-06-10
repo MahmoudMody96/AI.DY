@@ -17,25 +17,25 @@ export default async function NewToolPage() {
   return (
     <div className="space-y-6">
       <div>
-        <p className="text-xs text-zinc-500">Tools</p>
+        <p className="text-xs text-muted-foreground">Tools</p>
         <h1 className="mt-1 text-2xl font-semibold tracking-tight">New tool</h1>
       </div>
 
-      <form action={saveTool} className="space-y-6 rounded-lg border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
+      <form action={saveTool} className="space-y-6 rounded-lg border border-input bg-background p-6 border-input bg-card">
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           <div>
             <Label>Name (Arabic) *</Label>
             <input
               name="name"
               required
-              className="w-full rounded-md border border-zinc-200 bg-white px-3 py-1.5 text-sm dark:border-zinc-800 dark:bg-zinc-900"
+              className="w-full rounded-md border border-input bg-background px-3 py-1.5 text-sm border-input bg-card"
             />
           </div>
           <div>
             <Label>Name (English)</Label>
             <input
               name="name_en"
-              className="w-full rounded-md border border-zinc-200 bg-white px-3 py-1.5 text-sm dark:border-zinc-800 dark:bg-zinc-900"
+              className="w-full rounded-md border border-input bg-background px-3 py-1.5 text-sm border-input bg-card"
             />
           </div>
           <div>
@@ -43,7 +43,7 @@ export default async function NewToolPage() {
             <select
               name="category_id"
               required
-              className="w-full rounded-md border border-zinc-200 bg-white px-3 py-1.5 text-sm dark:border-zinc-800 dark:bg-zinc-900"
+              className="w-full rounded-md border border-input bg-background px-3 py-1.5 text-sm border-input bg-card"
             >
               <option value="">Select…</option>
               {cats.map((c) => (
@@ -57,7 +57,7 @@ export default async function NewToolPage() {
             <Label>Tagline</Label>
             <input
               name="tagline"
-              className="w-full rounded-md border border-zinc-200 bg-white px-3 py-1.5 text-sm dark:border-zinc-800 dark:bg-zinc-900"
+              className="w-full rounded-md border border-input bg-background px-3 py-1.5 text-sm border-input bg-card"
             />
           </div>
           <div className="md:col-span-2">
@@ -65,7 +65,7 @@ export default async function NewToolPage() {
             <input
               name="website_url"
               type="url"
-              className="w-full rounded-md border border-zinc-200 bg-white px-3 py-1.5 text-sm dark:border-zinc-800 dark:bg-zinc-900"
+              className="w-full rounded-md border border-input bg-background px-3 py-1.5 text-sm border-input bg-card"
             />
           </div>
           <div>
@@ -73,7 +73,7 @@ export default async function NewToolPage() {
             <select
               name="pricing_type"
               defaultValue="freemium"
-              className="w-full rounded-md border border-zinc-200 bg-white px-3 py-1.5 text-sm dark:border-zinc-800 dark:bg-zinc-900"
+              className="w-full rounded-md border border-input bg-background px-3 py-1.5 text-sm border-input bg-card"
             >
               <option value="free">Free</option>
               <option value="freemium">Freemium</option>
@@ -87,7 +87,7 @@ export default async function NewToolPage() {
               name="monthly_price"
               type="number"
               step="0.01"
-              className="w-full rounded-md border border-zinc-200 bg-white px-3 py-1.5 text-sm dark:border-zinc-800 dark:bg-zinc-900"
+              className="w-full rounded-md border border-input bg-background px-3 py-1.5 text-sm border-input bg-card"
             />
           </div>
           <div className="md:col-span-2">
@@ -95,12 +95,12 @@ export default async function NewToolPage() {
             <textarea
               name="description"
               rows={4}
-              className="w-full rounded-md border border-zinc-200 bg-white px-3 py-1.5 text-sm dark:border-zinc-800 dark:bg-zinc-900"
+              className="w-full rounded-md border border-input bg-background px-3 py-1.5 text-sm border-input bg-card"
             />
           </div>
         </div>
 
-        <div className="flex items-center gap-2 border-t border-zinc-200 pt-4 dark:border-zinc-800">
+        <div className="flex items-center gap-2 border-t border-input pt-4 border-input">
           <button
             type="submit"
             className="rounded-md bg-violet-600 px-4 py-2 text-sm font-medium text-white hover:bg-violet-700"
@@ -109,7 +109,7 @@ export default async function NewToolPage() {
           </button>
           <a
             href="/admin/tools"
-            className="rounded-md border border-zinc-200 bg-white px-4 py-2 text-sm font-medium hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900 dark:hover:bg-zinc-800"
+            className="rounded-md border border-input bg-background px-4 py-2 text-sm font-medium hover:bg-muted border-input bg-card hover:bg-muted"
           >
             Cancel
           </a>
@@ -117,7 +117,7 @@ export default async function NewToolPage() {
             <input
               type="checkbox"
               name="is_published"
-              className="h-4 w-4 rounded border-zinc-300 text-violet-600"
+              className="h-4 w-4 rounded border-input text-violet-600"
             />
             Publish immediately
           </label>

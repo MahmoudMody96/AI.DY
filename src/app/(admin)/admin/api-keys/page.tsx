@@ -3,6 +3,9 @@ import { createClient } from "@/lib/supabase/server";
 import { KeyRound, CheckCircle2, X, ExternalLink, AlertTriangle } from "lucide-react";
 import { createApiKey, revokeApiKey, reactivateApiKey, deleteApiKey } from "./actions";
 import { DeleteKeyButton } from "./delete-key-button";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { StatusBadge } from "@/components/ui/status-badge";
 
 function relativeTime(iso: string | null | undefined): string {
   if (!iso) return "—";
@@ -32,7 +35,7 @@ export default async function AdminApiKeysPage({
 }) {
   const { created, revoked, reactivated, deleted } = await searchParams;
   const admin = await createClient();
-  if (!admin) return <div className="text-zinc-500">Admin client unavailable</div>;
+  if (!admin) return <div className="text-muted-foreground">Admin client unavailable</div>;
 
   const { data: keys } = await admin
     .from("api_keys")
@@ -44,7 +47,7 @@ export default async function AdminApiKeysPage({
     <div className="space-y-4">
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">API Keys</h1>
-        <p className="text-sm text-zinc-500">
+        <p className="text-sm text-muted-foreground">
           Manage programmatic access tokens for the AI.DY content API.
         </p>
       </div>
@@ -56,12 +59,12 @@ export default async function AdminApiKeysPage({
             <CheckCircle2 className="h-4 w-4" />
             API key created — copy it now, you won't see it again
           </div>
-          <code className="block break-all rounded bg-white px-3 py-2 font-mono text-xs text-zinc-900 dark:bg-zinc-900 dark:text-zinc-100">
+          <code className="block break-all rounded bg-card px-3 py-2 font-mono text-xs text-foreground">
             {created}
           </code>
-          <p className="mt-2 text-xs text-zinc-500">
-            Use this as <code className="rounded bg-zinc-100 px-1 dark:bg-zinc-800">X-API-Key</code> header or
-            <code className="rounded bg-zinc-100 px-1 dark:bg-zinc-800">Authorization: Bearer &lt;key&gt;</code>.
+          <p className="mt-2 text-xs text-muted-foreground">
+            Use this as <code className="rounded bg-muted px-1">X-API-Key</code> header or
+            <code className="rounded bg-muted px-1">Authorization: Bearer &lt;key&gt;</code>.
           </p>
         </div>
       )}
@@ -76,62 +79,65 @@ export default async function AdminApiKeysPage({
         </div>
       )}
       {deleted && (
-        <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-3 text-sm text-zinc-700 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300">
+        <div className="rounded-lg border border-border bg-muted/30 p-3 text-sm text-foreground">
           Key deleted
         </div>
       )}
 
       {/* Endpoint reference */}
-      <div className="rounded-lg border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-900">
-        <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-zinc-500">
+      <div className="rounded-lg border border-border bg-card p-5">
+        <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
           Content API
         </h2>
-        <p className="mb-3 text-sm text-zinc-600 dark:text-zinc-400">
+        <p className="mb-3 text-sm text-muted-foreground">
           Use your API key to publish news articles or user posts programmatically (e.g. from AI agents / automation).
         </p>
         <div className="space-y-2 font-mono text-xs">
-          <div className="rounded-md border border-zinc-200 bg-zinc-50 px-3 py-2 dark:border-zinc-800 dark:bg-zinc-950">
+          <div className="rounded-md border border-border bg-muted px-3 py-2">
             <span className="text-emerald-600 dark:text-emerald-400">POST</span> /api/admin/content
-            <span className="ms-2 text-zinc-500">— create news article or user post (kind: "news" | "user_post")</span>
+            <span className="ms-2 text-muted-foreground">— create news article or user post (kind: "news" | "user_post")</span>
           </div>
-          <div className="rounded-md border border-zinc-200 bg-zinc-50 px-3 py-2 dark:border-zinc-800 dark:bg-zinc-950">
+          <div className="rounded-md border border-border bg-muted px-3 py-2">
             <span className="text-blue-600 dark:text-blue-400">GET</span> /api/admin/content
-            <span className="ms-2 text-zinc-500">— list recent items</span>
+            <span className="ms-2 text-muted-foreground">— list recent items</span>
           </div>
         </div>
-        <p className="mt-3 text-xs text-zinc-500">
-          Auth via header: <code className="rounded bg-zinc-100 px-1 dark:bg-zinc-800">X-API-Key: &lt;key&gt;</code>
+        <p className="mt-3 text-xs text-muted-foreground">
+          Auth via header: <code className="rounded bg-muted px-1">X-API-Key: &lt;key&gt;</code>
         </p>
       </div>
 
       {/* Create new key */}
-      <form action={createApiKey} className="flex items-end gap-2 rounded-lg border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
+      <form
+        action={createApiKey}
+        className="flex items-end gap-2 rounded-lg border border-border bg-card p-4"
+      >
         <div className="flex-1">
-          <label htmlFor="name" className="mb-1 block text-xs font-medium text-zinc-700 dark:text-zinc-300">
+          <label
+            htmlFor="name"
+            className="mb-1 block text-xs font-medium text-foreground"
+          >
             New key name
           </label>
-          <input
+          <Input
             id="name"
             name="name"
             type="text"
             required
             placeholder="e.g. AI Agent — Daily Publishing"
-            className="w-full rounded-md border border-zinc-200 bg-white px-3 py-1.5 text-sm dark:border-zinc-800 dark:bg-zinc-900"
+            className="h-9"
           />
         </div>
-        <button
-          type="submit"
-          className="inline-flex items-center gap-1.5 rounded-md bg-violet-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-violet-700"
-        >
+        <Button type="submit" size="sm">
           <KeyRound className="h-4 w-4" />
           Create
-        </button>
+        </Button>
       </form>
 
       {/* Keys list */}
-      <div className="overflow-hidden rounded-lg border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
+      <div className="overflow-hidden rounded-lg border border-border bg-card">
         <table className="w-full text-sm">
-          <thead className="border-b border-zinc-200 bg-zinc-50 text-left text-xs font-medium uppercase tracking-wider text-zinc-500 dark:border-zinc-800 dark:bg-zinc-900/50">
+          <thead className="border-b border-border bg-muted text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">
             <tr>
               <th className="px-4 py-2.5">Name</th>
               <th className="px-4 py-2.5">Prefix</th>
@@ -142,20 +148,20 @@ export default async function AdminApiKeysPage({
               <th className="px-4 py-2.5">Actions</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800">
+          <tbody className="divide-y divide-border">
             {list.length === 0 && (
               <tr>
-                <td colSpan={7} className="px-4 py-12 text-center text-zinc-500">
-                  <KeyRound className="mx-auto mb-2 h-8 w-8 text-zinc-300" />
+                <td colSpan={7} className="px-4 py-12 text-center text-muted-foreground">
+                  <KeyRound className="mx-auto mb-2 h-8 w-8 text-muted-foreground/60" />
                   No API keys yet. Create one above.
                 </td>
               </tr>
             )}
             {list.map((k) => (
-              <tr key={k.id} className="hover:bg-zinc-50/50 dark:hover:bg-zinc-800/30">
+              <tr key={k.id} className="transition-colors hover:bg-muted/50">
                 <td className="px-4 py-2.5 font-medium">{k.name}</td>
                 <td className="px-4 py-2.5">
-                  <code className="rounded bg-zinc-100 px-1.5 py-0.5 font-mono text-xs dark:bg-zinc-800">
+                  <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-xs">
                     {k.key_prefix}…
                   </code>
                 </td>
@@ -171,22 +177,16 @@ export default async function AdminApiKeysPage({
                     ))}
                   </div>
                 </td>
-                <td className="px-4 py-2.5 text-zinc-500">
+                <td className="px-4 py-2.5 text-muted-foreground">
                   {relativeTime(k.last_used_at)}
                 </td>
                 <td className="px-4 py-2.5">
-                  {k.is_active ? (
-                    <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300">
-                      <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                      active
-                    </span>
-                  ) : (
-                    <span className="inline-flex items-center gap-1 rounded-full bg-zinc-100 px-2 py-0.5 text-xs font-medium text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
-                      revoked
-                    </span>
-                  )}
+                  <StatusBadge
+                    value={k.is_active ? "active" : "revoked"}
+                    label={k.is_active ? "active" : "revoked"}
+                  />
                 </td>
-                <td className="px-4 py-2.5 text-zinc-500">
+                <td className="px-4 py-2.5 text-muted-foreground">
                   {relativeTime(k.created_at)}
                 </td>
                 <td className="px-4 py-2.5">
@@ -194,24 +194,28 @@ export default async function AdminApiKeysPage({
                     {k.is_active ? (
                       <form action={revokeApiKey}>
                         <input type="hidden" name="id" value={k.id} />
-                        <button
+                        <Button
                           type="submit"
-                          className="inline-flex items-center gap-1 rounded border border-amber-200 bg-amber-50 px-2 py-1 text-xs font-medium text-amber-700 hover:bg-amber-100 dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-300"
+                          size="sm"
+                          variant="outline"
+                          className="border-amber-300 bg-amber-50 text-amber-700 hover:bg-amber-100 dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-300"
                         >
                           <X className="h-3 w-3" />
                           Revoke
-                        </button>
+                        </Button>
                       </form>
                     ) : (
                       <form action={reactivateApiKey}>
                         <input type="hidden" name="id" value={k.id} />
-                        <button
+                        <Button
                           type="submit"
-                          className="inline-flex items-center gap-1 rounded border border-emerald-200 bg-emerald-50 px-2 py-1 text-xs font-medium text-emerald-700 hover:bg-emerald-100 dark:border-emerald-900 dark:bg-emerald-950/30 dark:text-emerald-300"
+                          size="sm"
+                          variant="outline"
+                          className="border-emerald-300 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:border-emerald-900 dark:bg-emerald-950/30 dark:text-emerald-300"
                         >
                           <CheckCircle2 className="h-3 w-3" />
                           Reactivate
-                        </button>
+                        </Button>
                       </form>
                     )}
                     <DeleteKeyButton formAction={deleteApiKey} id={k.id} />

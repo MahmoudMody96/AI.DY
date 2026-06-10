@@ -6,6 +6,9 @@ import { FilterSidebar } from "./filter-sidebar";
 import { SearchBar } from "./search-bar";
 import { SortDropdown } from "./sort-dropdown";
 import { Pagination } from "./pagination";
+import { Container } from "@/components/layout/container";
+import { EmptyState } from "@/components/ui/empty-state";
+import { Breadcrumb } from "@/components/ui/breadcrumb";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -140,17 +143,18 @@ export default async function ToolsPage({
   return (
     <div className="flex flex-col flex-1">
       {/* Header */}
-      <section className="border-b border-zinc-200 bg-zinc-50/50 dark:border-zinc-800 dark:bg-zinc-900/30">
-        <div className="mx-auto max-w-7xl px-6 py-10">
-          <nav className="mb-4 text-sm text-zinc-500 dark:text-zinc-400">
-            <Link href="/" className="hover:text-violet-600">الرئيسية</Link>
-            <span className="mx-2">/</span>
-            <span className="text-zinc-900 dark:text-zinc-100">كل الأدوات</span>
-          </nav>
+      <section className="border-b border-border bg-muted/30">
+        <Container size="wide" className="py-10">
+          <Breadcrumb
+            items={[
+              { label: "الرئيسية", href: "/" },
+              { label: "كل الأدوات" },
+            ]}
+          />
           <h1 className="text-3xl font-black tracking-tight sm:text-4xl">
             كل أدوات الذكاء الاصطناعي
           </h1>
-          <p className="mt-2 text-zinc-600 dark:text-zinc-400">
+          <p className="mt-2 text-muted-foreground">
             {totalCount} أداة متاحة — فلتر، قارن، واختر الأنسب
           </p>
 
@@ -161,11 +165,11 @@ export default async function ToolsPage({
             </div>
             <SortDropdown currentSort={sort} />
           </div>
-        </div>
+        </Container>
       </section>
 
       {/* Body: Sidebar + Grid */}
-      <section className="mx-auto w-full max-w-7xl px-6 py-10">
+      <Container size="wide" className="py-10">
         <div className="grid gap-8 lg:grid-cols-[260px_1fr]">
           {/* Sidebar */}
           <aside className="lg:sticky lg:top-6 lg:self-start">
@@ -183,18 +187,11 @@ export default async function ToolsPage({
           {/* Grid + Pagination */}
           <div>
             {tools.length === 0 ? (
-              <div className="rounded-2xl border border-dashed border-zinc-300 p-12 text-center dark:border-zinc-700">
-                <p className="text-lg font-semibold">لا توجد أدوات</p>
-                <p className="mt-2 text-sm text-zinc-500">
-                  جرّب تعديل الفلاتر أو ابحث بكلمات مختلفة.
-                </p>
-                <Link
-                  href="/tools"
-                  className="mt-4 inline-block text-sm font-semibold text-violet-600 hover:text-violet-700"
-                >
-                  مسح كل الفلاتر ←
-                </Link>
-              </div>
+              <EmptyState
+                title="لا توجد أدوات"
+                description="جرّب تعديل الفلاتر أو ابحث بكلمات مختلفة."
+                action={{ label: "مسح كل الفلاتر", href: "/tools" }}
+              />
             ) : (
               <>
                 <Suspense fallback={null}>
@@ -212,7 +209,7 @@ export default async function ToolsPage({
             )}
           </div>
         </div>
-      </section>
+      </Container>
     </div>
   );
 }

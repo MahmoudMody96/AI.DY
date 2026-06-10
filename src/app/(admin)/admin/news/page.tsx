@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
-import { Plus, Newspaper, CheckCircle2, Clock, Archive } from "lucide-react";
+import { Plus, Newspaper } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { StatusBadge } from "@/components/ui/status-badge";
 
 function relativeTime(iso: string | null | undefined): string {
   if (!iso) return "—";
@@ -18,7 +20,7 @@ function relativeTime(iso: string | null | undefined): string {
 
 export default async function AdminNewsPage() {
   const admin = await createClient();
-  if (!admin) return <div className="text-zinc-500">Admin client unavailable</div>;
+  if (!admin) return <div className="text-muted-foreground">Admin client unavailable</div>;
 
   const { data: posts } = await admin
     .from("articles")
@@ -40,22 +42,21 @@ export default async function AdminNewsPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">News</h1>
-          <p className="text-sm text-zinc-500">
+          <p className="text-sm text-muted-foreground">
             {list.length} total · {counts.published ?? 0} published · {counts.draft ?? 0} drafts
           </p>
         </div>
-        <Link
-          href="/admin/news/new/edit"
-          className="inline-flex items-center gap-1.5 rounded-md bg-violet-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-violet-700"
-        >
-          <Plus className="h-4 w-4" />
-          New article
-        </Link>
+        <Button asChild size="sm">
+          <Link href="/admin/news/new/edit">
+            <Plus className="h-4 w-4" />
+            New article
+          </Link>
+        </Button>
       </div>
 
-      <div className="overflow-hidden rounded-lg border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
+      <div className="overflow-hidden rounded-lg border border-border bg-card">
         <table className="w-full text-sm">
-          <thead className="border-b border-zinc-200 bg-zinc-50 text-left text-xs font-medium uppercase tracking-wider text-zinc-500 dark:border-zinc-800 dark:bg-zinc-900/50">
+          <thead className="border-b border-border bg-muted text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">
             <tr>
               <th className="px-4 py-2.5">Title</th>
               <th className="px-4 py-2.5">Status</th>
@@ -64,15 +65,15 @@ export default async function AdminNewsPage() {
               <th className="px-4 py-2.5">Updated</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800">
+          <tbody className="divide-y divide-border">
             {list.length === 0 && (
               <tr>
-                <td colSpan={5} className="px-4 py-12 text-center text-zinc-500">
-                  <Newspaper className="mx-auto mb-2 h-8 w-8 text-zinc-300" />
+                <td colSpan={5} className="px-4 py-12 text-center text-muted-foreground">
+                  <Newspaper className="mx-auto mb-2 h-8 w-8 text-muted-foreground/60" />
                   No articles yet.{" "}
                   <Link
                     href="/admin/news/new/edit"
-                    className="text-violet-600 hover:underline"
+                    className="text-primary hover:underline"
                   >
                     Write the first one
                   </Link>
@@ -80,50 +81,35 @@ export default async function AdminNewsPage() {
               </tr>
             )}
             {list.map((p) => (
-              <tr key={p.id} className="hover:bg-zinc-50/50 dark:hover:bg-zinc-800/30">
+              <tr key={p.id} className="transition-colors hover:bg-muted/50">
                 <td className="px-4 py-2.5">
                   <Link
                     href={`/admin/news/${p.id}/edit`}
-                    className="font-medium text-violet-700 hover:underline dark:text-violet-400"
+                    className="font-medium text-primary hover:underline"
                   >
                     {p.title}
                   </Link>
-                  <div className="text-xs text-zinc-400">/news/{p.slug}</div>
+                  <div className="text-xs text-muted-foreground">/news/{p.slug}</div>
                 </td>
                 <td className="px-4 py-2.5">
-                  {p.status === "published" ? (
-                    <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300">
-                      <CheckCircle2 className="h-3 w-3" />
-                      Published
-                    </span>
-                  ) : p.status === "draft" ? (
-                    <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-700 dark:bg-amber-950/50 dark:text-amber-300">
-                      <Clock className="h-3 w-3" />
-                      Draft
-                    </span>
-                  ) : (
-                    <span className="inline-flex items-center gap-1 rounded-full bg-zinc-100 px-2 py-0.5 text-xs font-medium text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
-                      <Archive className="h-3 w-3" />
-                      {p.status}
-                    </span>
-                  )}
+                  <StatusBadge value={p.status} />
                 </td>
                 <td className="px-4 py-2.5">
                   <div className="flex flex-wrap gap-1">
                     {p.tags.slice(0, 3).map((t: string) => (
                       <span
                         key={t}
-                        className="rounded-full bg-zinc-100 px-2 py-0.5 text-xs text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400"
+                        className="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground"
                       >
                         {t}
                       </span>
                     ))}
                   </div>
                 </td>
-                <td className="px-4 py-2.5 text-zinc-500">
+                <td className="px-4 py-2.5 text-muted-foreground">
                   {p.reading_time ? `${p.reading_time}m` : "—"}
                 </td>
-                <td className="px-4 py-2.5 text-zinc-500">{relativeTime(p.updated_at)}</td>
+                <td className="px-4 py-2.5 text-muted-foreground">{relativeTime(p.updated_at)}</td>
               </tr>
             ))}
           </tbody>

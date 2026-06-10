@@ -3,6 +3,12 @@ import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { ToolGrid } from "../tool-grid";
 import { ToolLogoServer } from "@/components/brand/tool-logo-server";
+import { ReviewsSection } from "@/components/reviews/reviews-section";
+import { Container } from "@/components/layout/container";
+import { Breadcrumb } from "@/components/ui/breadcrumb";
+import { RatingStars } from "@/components/ui/rating-stars";
+import { PricingBadge } from "@/components/ui/pricing-badge";
+import { PricingLabel } from "@/components/ui/pricing-label";
 import type { Metadata } from "next";
 
 const CATEGORY_ICONS_UNUSED = {
@@ -21,21 +27,6 @@ const CATEGORY_ICONS_UNUSED = {
 function categoryEmoji(icon: string | null | undefined): string {
   if (!icon) return "✨";
   return CATEGORY_ICONS_UNUSED[icon as keyof typeof CATEGORY_ICONS_UNUSED] ?? "✨";
-}
-
-function pricingLabel(type: string | null, monthly: number | null): string {
-  if (type === "free") return "مجاني بالكامل";
-  if (type === "freemium") return "مجاني + مدفوع";
-  if (type === "paid" && monthly != null) return `${monthly}$ شهرياً`;
-  if (type === "paid") return "مدفوع";
-  return "—";
-}
-
-function pricingColor(type: string | null): string {
-  if (type === "free") return "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300";
-  if (type === "freemium") return "bg-blue-100 text-blue-800 dark:bg-blue-950/50 dark:text-blue-300";
-  if (type === "paid") return "bg-amber-100 text-amber-800 dark:bg-amber-950/50 dark:text-amber-300";
-  return "bg-zinc-100 text-zinc-700";
 }
 
 type Params = { slug: string };
@@ -187,6 +178,15 @@ export default async function ToolDetailPage({
       : undefined,
   };
 
+  const breadcrumbItems = [
+    { label: "الرئيسية", href: "/" },
+    { label: "الأدوات", href: "/tools" },
+    ...(toolCategory
+      ? [{ label: toolCategory.name, href: `/categories/${toolCategory.slug}` }]
+      : []),
+    { label: tool.name },
+  ];
+
   return (
     <div className="flex flex-col flex-1">
       {/* JSON-LD */}
@@ -196,32 +196,13 @@ export default async function ToolDetailPage({
       />
 
       {/* Hero */}
-      <section className="border-b border-zinc-200 dark:border-zinc-800">
-        <div className="mx-auto max-w-6xl px-6 py-10">
-          <nav className="mb-6 text-sm text-zinc-500 dark:text-zinc-400">
-            <Link href="/" className="hover:text-violet-600">الرئيسية</Link>
-            <span className="mx-2">/</span>
-            <Link href="/tools" className="hover:text-violet-600">الأدوات</Link>
-            {toolCategory && (
-              <>
-                <span className="mx-2">/</span>
-                <Link
-                  href={`/categories/${toolCategory.slug}`}
-                  className="hover:text-violet-600"
-                >
-                  {toolCategory.name}
-                </Link>
-              </>
-            )}
-            <span className="mx-2">/</span>
-            <span className="text-zinc-900 dark:text-zinc-100">{tool.name}</span>
-          </nav>
+      <section className="border-b border-border">
+        <Container className="py-10">
+          <Breadcrumb items={breadcrumbItems} />
 
           <div className="flex flex-col gap-6 sm:flex-row sm:items-start">
             {/* Logo / Icon */}
-            <div
-              className="flex h-24 w-24 shrink-0 items-center justify-center rounded-2xl bg-white p-2 ring-1 ring-zinc-200 dark:bg-zinc-900 dark:ring-zinc-800"
-            >
+            <div className="flex h-24 w-24 shrink-0 items-center justify-center rounded-2xl bg-card p-2 ring-1 ring-border">
               <ToolLogoServer
                 slug={tool.slug}
                 name={tool.name}
@@ -251,7 +232,7 @@ export default async function ToolDetailPage({
                 {tool.name}
               </h1>
               {tool.tagline && (
-                <p className="mt-2 text-lg text-zinc-600 dark:text-zinc-400">
+                <p className="mt-2 text-lg text-muted-foreground">
                   {tool.tagline}
                 </p>
               )}
@@ -259,17 +240,13 @@ export default async function ToolDetailPage({
               {/* Rating + Pricing inline */}
               <div className="mt-4 flex flex-wrap items-center gap-4 text-sm">
                 {tool.rating_avg != null && (
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-amber-500">⭐</span>
-                    <span className="font-bold">{tool.rating_avg.toFixed(1)}</span>
-                    {tool.rating_count != null && (
-                      <span className="text-zinc-500">({tool.rating_count.toLocaleString("ar-EG")} تقييم)</span>
-                    )}
-                  </div>
+                  <RatingStars
+                    rating={tool.rating_avg}
+                    count={tool.rating_count}
+                    showCount
+                  />
                 )}
-                <span className={`rounded-full px-3 py-1 text-xs font-semibold ${pricingColor(tool.pricing_type)}`}>
-                  {pricingLabel(tool.pricing_type, tool.monthly_price)}
-                </span>
+                <PricingBadge type={tool.pricing_type} monthly={tool.monthly_price} />
               </div>
 
               {/* CTA */}
@@ -287,82 +264,97 @@ export default async function ToolDetailPage({
               )}
             </div>
           </div>
-        </div>
+        </Container>
       </section>
 
       {/* Body: description + sidebar */}
-      <section className="mx-auto w-full max-w-6xl px-6 py-12">
-        <div className="grid gap-10 lg:grid-cols-[1fr_300px]">
-          {/* Main content */}
-          <article>
-            <h2 className="text-2xl font-bold tracking-tight">عن {tool.name}</h2>
-            <div className="prose prose-zinc mt-4 max-w-none dark:prose-invert">
-              <p className="text-lg leading-8 text-zinc-700 dark:text-zinc-300">
-                {tool.description ?? tool.tagline}
-              </p>
-            </div>
-
-            {tool.tags && tool.tags.length > 0 && (
-              <div className="mt-8">
-                <h3 className="text-sm font-bold uppercase tracking-wider text-zinc-500">
-                  الوسوم
-                </h3>
-                <div className="mt-3 flex flex-wrap gap-2">
-                  {tool.tags.map((tag: string) => (
-                    <span
-                      key={tag}
-                      className="rounded-full bg-zinc-100 px-3 py-1 text-xs font-medium text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300"
-                    >
-                      #{tag}
-                    </span>
-                  ))}
-                </div>
+      <section className="py-12">
+        <Container>
+          <div className="grid gap-10 lg:grid-cols-[1fr_300px]">
+            {/* Main content */}
+            <article>
+              <h2 className="text-2xl font-bold tracking-tight">عن {tool.name}</h2>
+              <div className="prose prose-zinc mt-4 max-w-none dark:prose-invert">
+                <p className="text-lg leading-8 text-foreground/80">
+                  {tool.description ?? tool.tagline}
+                </p>
               </div>
-            )}
-          </article>
 
-          {/* Sidebar */}
-          <aside className="lg:sticky lg:top-6 lg:self-start">
-            <div className="rounded-2xl border border-zinc-200 bg-zinc-50/50 p-6 dark:border-zinc-800 dark:bg-zinc-900/30">
-              <h3 className="text-sm font-bold uppercase tracking-wider text-zinc-500">
-                معلومات سريعة
-              </h3>
-              <dl className="mt-4 space-y-3 text-sm">
-                {tool.pricing_type && (
-                  <div>
-                    <dt className="text-zinc-500">التسعير</dt>
-                    <dd className="font-semibold">{pricingLabel(tool.pricing_type, tool.monthly_price)}</dd>
+              {tool.tags && tool.tags.length > 0 && (
+                <div className="mt-8">
+                  <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">
+                    الوسوم
+                  </h3>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {tool.tags.map((tag: string) => (
+                      <span
+                        key={tag}
+                        className="rounded-full bg-muted px-3 py-1 text-xs font-medium text-foreground"
+                      >
+                        #{tag}
+                      </span>
+                    ))}
                   </div>
-                )}
-                {tool.starting_price != null && tool.starting_price > 0 && (
+                </div>
+              )}
+            </article>
+
+            {/* Sidebar */}
+            <aside className="lg:sticky lg:top-6 lg:self-start">
+              <div className="rounded-2xl border border-border bg-muted/30 p-6">
+                <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">
+                  معلومات سريعة
+                </h3>
+                <dl className="mt-4 space-y-3 text-sm">
+                  {tool.pricing_type && (
+                    <div>
+                      <dt className="text-muted-foreground">التسعير</dt>
+                      <dd className="font-semibold">
+                        <PricingBadge type={tool.pricing_type} monthly={tool.monthly_price} />
+                      </dd>
+                    </div>
+                  )}
+                  {tool.starting_price != null && tool.starting_price > 0 && (
+                    <div>
+                      <dt className="text-muted-foreground">يبدأ من</dt>
+                      <dd className="font-semibold">
+                        <PricingLabel variant="starting" starting={tool.starting_price} />
+                      </dd>
+                    </div>
+                  )}
                   <div>
-                    <dt className="text-zinc-500">يبدأ من</dt>
-                    <dd className="font-semibold">${tool.starting_price}</dd>
+                    <dt className="text-muted-foreground">المشاهدات</dt>
+                    <dd className="font-semibold">
+                      {(tool.views_count ?? 0).toLocaleString("ar-EG")}
+                    </dd>
                   </div>
-                )}
-                <div>
-                  <dt className="text-zinc-500">المشاهدات</dt>
-                  <dd className="font-semibold">{(tool.views_count ?? 0).toLocaleString("ar-EG")}</dd>
-                </div>
-                <div>
-                  <dt className="text-zinc-500">آخر تحديث</dt>
-                  <dd className="font-semibold">
-                    {new Date(tool.updated_at).toLocaleDateString("ar-EG", {
-                      year: "numeric",
-                      month: "long",
-                      day: "numeric",
-                    })}
-                  </dd>
-                </div>
-              </dl>
-            </div>
-          </aside>
-        </div>
+                  <div>
+                    <dt className="text-muted-foreground">آخر تحديث</dt>
+                    <dd className="font-semibold">
+                      {new Date(tool.updated_at).toLocaleDateString("ar-EG", {
+                        year: "numeric",
+                        month: "long",
+                        day: "numeric",
+                      })}
+                    </dd>
+                  </div>
+                </dl>
+              </div>
+            </aside>
+          </div>
+        </Container>
       </section>
+
+      {/* Reviews & Ratings (Phase 1.3) */}
+      <ReviewsSection
+        toolId={tool.id}
+        ratingAvg={tool.rating_avg != null ? Number(tool.rating_avg) : null}
+        ratingCount={tool.rating_count != null ? Number(tool.rating_count) : null}
+      />
 
       {/* Related tools */}
       {relatedTools.length > 0 && (
-        <section className="border-t border-zinc-200 bg-zinc-50/50 dark:border-zinc-800 dark:bg-zinc-900/30">
+        <section className="border-t border-border bg-muted/30">
           <div className="mx-auto max-w-6xl px-6 py-12">
             <h2 className="mb-6 text-2xl font-bold tracking-tight">
               أدوات مشابهة في {toolCategory?.name}

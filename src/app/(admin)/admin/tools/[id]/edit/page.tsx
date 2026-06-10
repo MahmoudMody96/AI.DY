@@ -43,7 +43,7 @@ export default async function EditToolPage({
         <div>
           <Link
             href="/admin/tools"
-            className="text-xs text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300"
+            className="text-xs text-muted-foreground hover:text-foreground dark:hover:text-muted-foreground"
           >
             ← Tools
           </Link>
@@ -61,8 +61,8 @@ export default async function EditToolPage({
       <form action={saveTool} className="space-y-6">
         {tool && tool.id ? <input type="hidden" name="id" value={String(tool.id)} /> : null}
 
-        <div className="rounded-lg border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
-          <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-zinc-500">
+        <div className="rounded-lg border border-input bg-background p-6 border-input bg-card">
+          <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
             Basics
           </h2>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -75,7 +75,7 @@ export default async function EditToolPage({
                 name="category_id"
                 required
                 defaultValue={(tool?.category_id as string) ?? ""}
-                className="w-full rounded-md border border-zinc-200 bg-white px-3 py-1.5 text-sm dark:border-zinc-800 dark:bg-zinc-900"
+                className="w-full rounded-md border border-input bg-background px-3 py-1.5 text-sm border-input bg-card"
               >
                 <option value="">Select…</option>
                 {categories.map((c) => (
@@ -90,7 +90,7 @@ export default async function EditToolPage({
               <input
                 name="tagline"
                 defaultValue={(tool?.tagline as string) ?? ""}
-                className="w-full rounded-md border border-zinc-200 bg-white px-3 py-1.5 text-sm dark:border-zinc-800 dark:bg-zinc-900"
+                className="w-full rounded-md border border-input bg-background px-3 py-1.5 text-sm border-input bg-card"
               />
             </div>
             <div className="md:col-span-2">
@@ -99,14 +99,14 @@ export default async function EditToolPage({
                 name="description"
                 rows={4}
                 defaultValue={(tool?.description as string) ?? ""}
-                className="w-full rounded-md border border-zinc-200 bg-white px-3 py-1.5 text-sm dark:border-zinc-800 dark:bg-zinc-900"
+                className="w-full rounded-md border border-input bg-background px-3 py-1.5 text-sm border-input bg-card"
               />
             </div>
           </div>
         </div>
 
-        <div className="rounded-lg border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
-          <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-zinc-500">
+        <div className="rounded-lg border border-input bg-background p-6 border-input bg-card">
+          <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
             Links &amp; Media
           </h2>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -122,8 +122,8 @@ export default async function EditToolPage({
           </div>
         </div>
 
-        <div className="rounded-lg border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
-          <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-zinc-500">
+        <div className="rounded-lg border border-input bg-background p-6 border-input bg-card">
+          <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
             Pricing
           </h2>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
@@ -132,7 +132,7 @@ export default async function EditToolPage({
               <select
                 name="pricing_type"
                 defaultValue={(tool?.pricing_type as string) ?? "freemium"}
-                className="w-full rounded-md border border-zinc-200 bg-white px-3 py-1.5 text-sm dark:border-zinc-800 dark:bg-zinc-900"
+                className="w-full rounded-md border border-input bg-background px-3 py-1.5 text-sm border-input bg-card"
               >
                 {PRICING_TYPES.map((p) => (
                   <option key={p} value={p}>
@@ -158,8 +158,8 @@ export default async function EditToolPage({
           </div>
         </div>
 
-        <div className="rounded-lg border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
-          <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-zinc-500">
+        <div className="rounded-lg border border-input bg-background p-6 border-input bg-card">
+          <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
             SEO
           </h2>
           <div className="grid grid-cols-1 gap-4">
@@ -172,8 +172,8 @@ export default async function EditToolPage({
           </div>
         </div>
 
-        <div className="rounded-lg border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
-          <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-zinc-500">
+        <div className="rounded-lg border border-input bg-background p-6 border-input bg-card">
+          <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
             Visibility
           </h2>
           <div className="space-y-2">
@@ -192,7 +192,7 @@ export default async function EditToolPage({
           </div>
         </div>
 
-        <div className="flex items-center justify-between border-t border-zinc-200 pt-4 dark:border-zinc-800">
+        <div className="flex items-center justify-between border-t border-input pt-4 border-input">
           <div className="flex gap-2">
             <button
               type="submit"
@@ -202,7 +202,7 @@ export default async function EditToolPage({
             </button>
             <Link
               href="/admin/tools"
-              className="rounded-md border border-zinc-200 bg-white px-4 py-2 text-sm font-medium hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900 dark:hover:bg-zinc-800"
+              className="rounded-md border border-input bg-background px-4 py-2 text-sm font-medium hover:bg-muted border-input bg-card hover:bg-muted"
             >
               Cancel
             </Link>
@@ -220,7 +220,7 @@ export default async function EditToolPage({
 
 function Label({ children }: { children: React.ReactNode }) {
   return (
-    <label className="mb-1 block text-xs font-medium text-zinc-700 dark:text-zinc-300">
+    <label className="mb-1 block text-xs font-medium text-foreground dark:text-muted-foreground">
       {children}
     </label>
   );
@@ -252,9 +252,9 @@ function Field({
         required={required}
         defaultValue={defaultValue}
         step={step}
-        className="w-full rounded-md border border-zinc-200 bg-white px-3 py-1.5 text-sm dark:border-zinc-800 dark:bg-zinc-900"
+        className="w-full rounded-md border border-input bg-background px-3 py-1.5 text-sm border-input bg-card"
       />
-      {hint && <p className="mt-1 text-xs text-zinc-500">{hint}</p>}
+      {hint && <p className="mt-1 text-xs text-muted-foreground">{hint}</p>}
     </div>
   );
 }
@@ -276,11 +276,11 @@ function Toggle({
         type="checkbox"
         name={name}
         defaultChecked={defaultChecked}
-        className="mt-0.5 h-4 w-4 rounded border-zinc-300 text-violet-600 focus:ring-violet-500"
+        className="mt-0.5 h-4 w-4 rounded border-input text-violet-600 focus:ring-violet-500"
       />
       <div>
         <div className="text-sm font-medium">{label}</div>
-        {hint && <div className="text-xs text-zinc-500">{hint}</div>}
+        {hint && <div className="text-xs text-muted-foreground">{hint}</div>}
       </div>
     </label>
   );

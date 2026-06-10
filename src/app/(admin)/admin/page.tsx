@@ -1,18 +1,12 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import {
-  Wrench,
-  FolderTree,
-  FileText,
-  Star,
-  Users,
-  Mail,
-  TrendingUp,
   AlertCircle,
-  CheckCircle2,
-  Clock,
   ArrowUpRight,
+  TrendingUp,
 } from "lucide-react";
+import { StatCard } from "@/components/ui/stat-card";
+import { StatusBadge } from "@/components/ui/status-badge";
 
 type Stat = {
   label: string;
@@ -26,7 +20,7 @@ async function getStats(): Promise<{
   stats: Stat[];
   recentTools: Array<{ id: string; name: string; slug: string; updated_at: string }>;
   recentPosts: Array<{ id: string; title: string; slug: string; status: string; published_at: string | null; updated_at: string }>;
-  pendingReviews: number;
+  flaggedReviews: number;
   draftPosts: number;
 }> {
   const admin = await createClient();
@@ -35,7 +29,7 @@ async function getStats(): Promise<{
       stats: [],
       recentTools: [],
       recentPosts: [],
-      pendingReviews: 0,
+      flaggedReviews: 0,
       draftPosts: 0,
     };
   }
@@ -48,7 +42,7 @@ async function getStats(): Promise<{
     { count: articlesPublished },
     { count: articlesDraft },
     { count: reviewsTotal },
-    { count: reviewsPending },
+    { count: reviewsFlagged },
     { count: profilesTotal },
     { count: leadsTotal },
     { data: recentTools },
@@ -61,7 +55,7 @@ async function getStats(): Promise<{
     admin.from("articles").select("*", { count: "exact", head: true }).eq("status", "published"),
     admin.from("articles").select("*", { count: "exact", head: true }).eq("status", "draft"),
     admin.from("reviews").select("*", { count: "exact", head: true }),
-    admin.from("reviews").select("*", { count: "exact", head: true }).eq("status", "pending"),
+    admin.from("reviews").select("*", { count: "exact", head: true }).neq("status", "published"),
     admin.from("profiles").select("*", { count: "exact", head: true }),
     admin.from("leads").select("*", { count: "exact", head: true }),
     admin
@@ -81,13 +75,13 @@ async function getStats(): Promise<{
       { label: "Tools (published / total)", value: `${toolsPublished ?? 0} / ${toolsTotal ?? 0}`, href: "/admin/tools" },
       { label: "Categories", value: categoriesTotal ?? 0, href: "/admin/categories" },
       { label: "Blog Posts (published / draft)", value: `${articlesPublished ?? 0} / ${articlesDraft ?? 0}`, href: "/admin/posts" },
-      { label: "Reviews (pending / total)", value: `${reviewsPending ?? 0} / ${reviewsTotal ?? 0}`, href: "/admin/reviews" },
+      { label: "Reviews (flagged / total)", value: `${reviewsFlagged ?? 0} / ${reviewsTotal ?? 0}`, href: "/admin/reviews" },
       { label: "Users", value: profilesTotal ?? 0 },
       { label: "Leads", value: leadsTotal ?? 0 },
     ],
     recentTools: recentTools ?? [],
     recentPosts: recentPosts ?? [],
-    pendingReviews: reviewsPending ?? 0,
+    flaggedReviews: reviewsFlagged ?? 0,
     draftPosts: articlesDraft ?? 0,
   };
 }
@@ -107,25 +101,25 @@ function relativeTime(iso: string | null | undefined): string {
 }
 
 export default async function AdminDashboardPage() {
-  const { stats, recentTools, recentPosts, pendingReviews, draftPosts } = await getStats();
+  const { stats, recentTools, recentPosts, flaggedReviews, draftPosts } = await getStats();
 
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">Dashboard</h1>
-        <p className="text-sm text-zinc-500">AI.DY operations overview</p>
+        <p className="text-sm text-muted-foreground">AI.DY operations overview</p>
       </div>
 
-      {(pendingReviews > 0 || draftPosts > 0) && (
+      {(flaggedReviews > 0 || draftPosts > 0) && (
         <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 dark:border-amber-900 dark:bg-amber-950/30">
           <div className="flex items-start gap-3">
             <AlertCircle className="mt-0.5 h-4 w-4 text-amber-600 dark:text-amber-500" />
             <div className="flex-1 text-sm">
               <p className="font-medium text-amber-900 dark:text-amber-200">Action required</p>
               <ul className="mt-1 space-y-1 text-amber-800 dark:text-amber-300">
-                {pendingReviews > 0 && (
+                {flaggedReviews > 0 && (
                   <li>
-                    {pendingReviews} review{pendingReviews > 1 ? "s" : ""} pending moderation ·{" "}
+                    {flaggedReviews} flagged review{flaggedReviews > 1 ? "s" : ""} ·{" "}
                     <Link href="/admin/reviews" className="underline">
                       Review now
                     </Link>
@@ -147,69 +141,66 @@ export default async function AdminDashboardPage() {
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {stats.map((s) => (
-          <Link
+          <StatCard
             key={s.label}
-            href={s.href ?? "#"}
-            className="group rounded-lg border border-zinc-200 bg-white p-4 transition-colors hover:border-zinc-300 dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-zinc-700"
-          >
-            <div className="flex items-center justify-between">
-              <p className="text-xs font-medium uppercase tracking-wider text-zinc-500">{s.label}</p>
-              {s.href && (
-                <ArrowUpRight className="h-3.5 w-3.5 text-zinc-300 transition-colors group-hover:text-zinc-500 dark:text-zinc-700" />
-              )}
-            </div>
-            <p className="mt-2 text-2xl font-semibold tracking-tight">{s.value}</p>
-          </Link>
+            label={s.label}
+            value={s.value}
+            href={s.href}
+          />
         ))}
       </div>
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-        <div className="rounded-lg border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
-          <div className="flex items-center justify-between border-b border-zinc-200 px-4 py-3 dark:border-zinc-800">
+        <div className="rounded-lg border border-border bg-card">
+          <div className="flex items-center justify-between border-b border-border px-4 py-3">
             <h2 className="text-sm font-semibold">Recent Tools</h2>
             <Link
               href="/admin/tools"
-              className="text-xs text-violet-600 hover:text-violet-700 dark:text-violet-400"
+              className="text-xs text-primary hover:underline"
             >
               View all →
             </Link>
           </div>
-          <ul className="divide-y divide-zinc-100 dark:divide-zinc-800">
+          <ul className="divide-y divide-border">
             {recentTools.length === 0 && (
-              <li className="px-4 py-6 text-center text-sm text-zinc-500">No tools yet</li>
+              <li className="px-4 py-6 text-center text-sm text-muted-foreground">
+                No tools yet
+              </li>
             )}
             {recentTools.map((t) => (
               <li key={t.id}>
                 <Link
                   href={`/admin/tools/${t.id}/edit`}
-                  className="flex items-center justify-between px-4 py-3 hover:bg-zinc-50 dark:hover:bg-zinc-800/50"
+                  className="flex items-center justify-between px-4 py-3 transition-colors hover:bg-muted/50"
                 >
                   <div>
                     <p className="text-sm font-medium">{t.name}</p>
-                    <p className="text-xs text-zinc-500">/tools/{t.slug}</p>
+                    <p className="text-xs text-muted-foreground">/tools/{t.slug}</p>
                   </div>
-                  <span className="text-xs text-zinc-400">{relativeTime(t.updated_at)}</span>
+                  <span className="text-xs text-muted-foreground">
+                    {relativeTime(t.updated_at)}
+                  </span>
                 </Link>
               </li>
             ))}
           </ul>
         </div>
 
-        <div className="rounded-lg border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
-          <div className="flex items-center justify-between border-b border-zinc-200 px-4 py-3 dark:border-zinc-800">
+        <div className="rounded-lg border border-border bg-card">
+          <div className="flex items-center justify-between border-b border-border px-4 py-3">
             <h2 className="text-sm font-semibold">Recent Posts</h2>
             <Link
               href="/admin/posts"
-              className="text-xs text-violet-600 hover:text-violet-700 dark:text-violet-400"
+              className="text-xs text-primary hover:underline"
             >
               View all →
             </Link>
           </div>
-          <ul className="divide-y divide-zinc-100 dark:divide-zinc-800">
+          <ul className="divide-y divide-border">
             {recentPosts.length === 0 && (
-              <li className="px-4 py-6 text-center text-sm text-zinc-500">
+              <li className="px-4 py-6 text-center text-sm text-muted-foreground">
                 No posts yet —{" "}
-                <Link href="/admin/posts/new" className="text-violet-600 hover:underline">
+                <Link href="/admin/posts/new" className="text-primary hover:underline">
                   write the first one
                 </Link>
               </li>
@@ -218,27 +209,12 @@ export default async function AdminDashboardPage() {
               <li key={p.id}>
                 <Link
                   href={`/admin/posts/${p.id}/edit`}
-                  className="flex items-center justify-between px-4 py-3 hover:bg-zinc-50 dark:hover:bg-zinc-800/50"
+                  className="flex items-center justify-between px-4 py-3 transition-colors hover:bg-muted/50"
                 >
                   <div className="flex-1 overflow-hidden">
                     <p className="truncate text-sm font-medium">{p.title}</p>
-                    <p className="flex items-center gap-2 text-xs text-zinc-500">
-                      <span
-                        className={
-                          p.status === "published"
-                            ? "inline-flex items-center gap-1 text-emerald-600"
-                            : p.status === "draft"
-                            ? "inline-flex items-center gap-1 text-amber-600"
-                            : "inline-flex items-center gap-1 text-zinc-500"
-                        }
-                      >
-                        {p.status === "published" ? (
-                          <CheckCircle2 className="h-3 w-3" />
-                        ) : (
-                          <Clock className="h-3 w-3" />
-                        )}
-                        {p.status}
-                      </span>
+                    <p className="flex items-center gap-2 text-xs text-muted-foreground">
+                      <StatusBadge value={p.status} />
                       <span>·</span>
                       <span>{relativeTime(p.published_at ?? p.updated_at)}</span>
                     </p>
@@ -250,10 +226,10 @@ export default async function AdminDashboardPage() {
         </div>
       </div>
 
-      <div className="rounded-lg border border-dashed border-zinc-300 bg-zinc-50/50 p-6 text-center dark:border-zinc-800 dark:bg-zinc-900/50">
-        <TrendingUp className="mx-auto h-6 w-6 text-zinc-400" />
+      <div className="rounded-lg border border-dashed border-border bg-muted/30 p-6 text-center">
+        <TrendingUp className="mx-auto h-6 w-6 text-muted-foreground" />
         <h3 className="mt-2 text-sm font-semibold">Analytics coming next</h3>
-        <p className="mt-1 text-xs text-zinc-500">
+        <p className="mt-1 text-xs text-muted-foreground">
           Plausible integration will land here in Phase 1.6. Track visitors,
           top tools, and conversion to /admin/posts publishes.
         </p>

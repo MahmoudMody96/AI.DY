@@ -1,5 +1,9 @@
 import { Badge } from "@/components/ui/badge";
 
+/**
+ * PricingBadge — status pill for a tool's pricing model.
+ * Distinct from `PricingLabel` (which shows the actual price text).
+ */
 export function PricingBadge({
   type,
   monthly,

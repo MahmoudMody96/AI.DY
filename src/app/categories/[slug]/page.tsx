@@ -2,6 +2,9 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { ToolGrid } from "../../tools/tool-grid";
+import { Container } from "@/components/layout/container";
+import { Breadcrumb } from "@/components/ui/breadcrumb";
+import { EmptyState } from "@/components/ui/empty-state";
 import type { Metadata } from "next";
 
 const CATEGORY_ICONS: Record<string, string> = {
@@ -113,19 +116,19 @@ export default async function CategoryPage({
     <div className="flex flex-col flex-1">
       {/* Hero */}
       <section
-        className="relative overflow-hidden border-b border-zinc-200 dark:border-zinc-800"
+        className="relative overflow-hidden border-b border-border"
         style={{
           background: `linear-gradient(135deg, ${category.color}10 0%, transparent 50%, ${category.color}10 100%)`,
         }}
       >
-        <div className="mx-auto max-w-6xl px-6 py-12">
-          <nav className="mb-6 text-sm text-zinc-500 dark:text-zinc-400">
-            <Link href="/" className="hover:text-violet-600">الرئيسية</Link>
-            <span className="mx-2">/</span>
-            <Link href="/tools" className="hover:text-violet-600">كل الأدوات</Link>
-            <span className="mx-2">/</span>
-            <span className="text-zinc-900 dark:text-zinc-100">{category.name}</span>
-          </nav>
+        <Container className="py-12">
+          <Breadcrumb
+            items={[
+              { label: "الرئيسية", href: "/" },
+              { label: "كل الأدوات", href: "/tools" },
+              { label: category.name },
+            ]}
+          />
 
           <div className="flex items-center gap-4">
             <div
@@ -139,7 +142,7 @@ export default async function CategoryPage({
                 {category.name}
               </h1>
               {category.name_en && (
-                <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
+                <p className="mt-1 text-sm text-muted-foreground">
                   {category.name_en}
                 </p>
               )}
@@ -147,33 +150,30 @@ export default async function CategoryPage({
           </div>
 
           {category.description && (
-            <p className="mt-4 max-w-2xl text-lg text-zinc-600 dark:text-zinc-400">
+            <p className="mt-4 max-w-2xl text-lg text-muted-foreground">
               {category.description}
             </p>
           )}
 
-          <p className="mt-4 text-sm font-medium text-zinc-500 dark:text-zinc-400">
+          <p className="mt-4 text-sm font-medium text-muted-foreground">
             {tools.length} {tools.length === 1 ? "أداة" : "أداة"} في هذه الفئة
           </p>
-        </div>
+        </Container>
       </section>
 
       {/* Tools grid */}
-      <section className="mx-auto w-full max-w-6xl px-6 py-12">
-        {tools.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-zinc-300 p-12 text-center dark:border-zinc-700">
-            <p className="text-lg font-semibold">لا توجد أدوات في هذه الفئة بعد</p>
-            <p className="mt-2 text-sm text-zinc-500">عُد لاحقاً أو تصفح فئات أخرى.</p>
-            <Link
-              href="/tools"
-              className="mt-4 inline-block text-sm font-semibold text-violet-600 hover:text-violet-700"
-            >
-              كل الأدوات ←
-            </Link>
-          </div>
-        ) : (
-          <ToolGrid tools={tools} />
-        )}
+      <section className="py-12">
+        <Container>
+          {tools.length === 0 ? (
+            <EmptyState
+              title="لا توجد أدوات في هذه الفئة بعد"
+              description="عُد لاحقاً أو تصفح فئات أخرى."
+              action={{ label: "كل الأدوات", href: "/tools" }}
+            />
+          ) : (
+            <ToolGrid tools={tools} />
+          )}
+        </Container>
       </section>
     </div>
   );
