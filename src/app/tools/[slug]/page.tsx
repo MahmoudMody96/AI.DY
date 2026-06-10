@@ -9,6 +9,7 @@ import { Breadcrumb } from "@/components/ui/breadcrumb";
 import { RatingStars } from "@/components/ui/rating-stars";
 import { PricingBadge } from "@/components/ui/pricing-badge";
 import { PricingLabel } from "@/components/ui/pricing-label";
+import { DemoRenderer } from "@/components/demos/demo-renderer";
 import type { Metadata } from "next";
 
 const CATEGORY_ICONS_UNUSED = {
@@ -101,6 +102,7 @@ export default async function ToolDetailPage({
       `id, slug, name, name_en, tagline, description, website_url, logo_url,
       pricing_type, starting_price, monthly_price, rating_avg, rating_count,
       views_count, is_featured, tags, created_at, updated_at,
+      demo_type, demo_config,
       category:categories(id, slug, name, name_en, icon, color)`
     )
     .eq("slug", slug)
@@ -266,6 +268,24 @@ export default async function ToolDetailPage({
           </div>
         </Container>
       </section>
+
+      {/* Live Demo (Phase 1.4) — rendered when tool.demo_type is set.
+          Sits between the hero and the body, in keeping with the
+          "demo-first" product philosophy. DemoRenderer is a no-op
+          when demo_type is null. */}
+      {tool.demo_type && (
+        <DemoRenderer
+          tool={{
+            id: tool.id,
+            slug: tool.slug,
+            name: tool.name,
+            name_en: tool.name_en,
+            color: null,
+            demo_type: tool.demo_type,
+            demo_config: tool.demo_config,
+          }}
+        />
+      )}
 
       {/* Body: description + sidebar */}
       <section className="py-12">
