@@ -1025,6 +1025,48 @@ export type Database = {
         };
         Relationships: [];
       };
+      use_cases: {
+        Row: {
+          id: string;
+          slug: string;
+          title: string;
+          description: string;
+          icon: string | null;
+          cover_image: string | null;
+          related_tool_ids: unknown;
+          seo_keywords: unknown;
+          status: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          slug: string;
+          title: string;
+          description: string;
+          icon?: string | null;
+          cover_image?: string | null;
+          related_tool_ids?: unknown;
+          seo_keywords?: unknown;
+          status?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          slug?: string;
+          title?: string;
+          description?: string;
+          icon?: string | null;
+          cover_image?: string | null;
+          related_tool_ids?: unknown;
+          seo_keywords?: unknown;
+          status?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
       user_posts: {
         Row: {
           id: string;
